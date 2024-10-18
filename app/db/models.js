@@ -35,7 +35,7 @@ export const AllergyType = {
   FISH: "fish",
   SHELLFISH: "shellfish",
   PEANUTS: "peanuts",
-  TREE_NUTS: "tree Nuts",
+  TREE_NUTS: "tree nuts",
   EGGS: "eggs",
   WHEAT: "wheat",
   SOY: "soy",
@@ -54,6 +54,7 @@ export const Seasons = {
   SUMMER: "summer",
   AUTUMN: "autumn",
   WINTER: "winter",
+  CHRISTMAS: "christmas",
 };
 
 const tagSchema = new mongoose.Schema({

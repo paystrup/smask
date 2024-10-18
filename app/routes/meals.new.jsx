@@ -2,11 +2,21 @@ import { Form, useActionData } from "@remix-run/react";
 import { redirect, json } from "@remix-run/node";
 import mongoose from "mongoose";
 import { AllergyType, Seasons } from "~/db/models";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import { Badge } from "~/components/ui/badge";
+import ContentWrapper from "~/components/base/ContentWrapper";
+import Ribbon from "~/components/base/Ribbon";
+import { X } from "lucide-react";
+import { useState } from "react";
 
 export default function CreateMeal() {
   const actionData = useActionData();
 
-  // Map through the enums to create select options
+  const [selectedAllergies, setSelectedAllergies] = useState([]);
+  const [selectedSeasons, setSelectedSeasons] = useState([]);
+
+  // Map through the enums to create options
   const allergyOptions = Object.values(AllergyType).map((allergy) => ({
     label: allergy,
     value: allergy.toLowerCase(),
@@ -17,113 +27,160 @@ export default function CreateMeal() {
     value: season.toLowerCase(),
   }));
 
+  const handleAllergyToggle = (value) => {
+    setSelectedAllergies((prev) =>
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value],
+    );
+  };
+
+  const handleSeasonToggle = (value) => {
+    setSelectedSeasons((prev) =>
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value],
+    );
+  };
+
   return (
-    <section className="flex flex-col gap-8">
-      <h1 className="mb-4 text-2xl font-bold">Create meal</h1>
-      <Form method="post" className="flex flex-col gap-4">
-        {/* Title Input */}
-        <label htmlFor="title" className="mb-1 block font-semibold">
-          Title
-        </label>
-        <input
-          type="text"
-          name="title"
-          id="title"
-          placeholder="Title"
-          defaultValue={""}
-          className={`border ${
-            actionData?.errors?.title ? "border-red-500" : ""
-          }`}
-        />
-        {actionData?.errors?.title && (
-          <p className="mt-1 text-red-500">{actionData.errors.title}</p>
-        )}
+    <Ribbon className="flex flex-col gap-8">
+      <ContentWrapper>
+        <h1 className="mb-4 text-2xl font-bold">Add new meal</h1>
+        <Form method="post" className="flex flex-col gap-4">
+          {/* Title Input */}
+          <label htmlFor="title" className="mb-1 block font-semibold">
+            Title
+          </label>
+          <Input
+            type="text"
+            name="title"
+            id="title"
+            placeholder="Title"
+            defaultValue={""}
+            className={`border ${
+              actionData?.errors?.title ? "border-red-500" : ""
+            }`}
+          />
+          {actionData?.errors?.title && (
+            <p className="mt-1 text-red-500">{actionData.errors.title}</p>
+          )}
 
-        {/* Description Input */}
-        <label htmlFor="description" className="mb-1 block font-semibold">
-          Description:
-        </label>
-        <textarea
-          name="description"
-          id="description"
-          placeholder="Description"
-          defaultValue={""}
-          className={`border ${
-            actionData?.errors?.description ? "border-red-500" : ""
-          }`}
-        />
-        {actionData?.errors?.description && (
-          <p className="mt-1 text-red-500">{actionData.errors.description}</p>
-        )}
+          {/* Description Input */}
+          <label htmlFor="description" className="mb-1 block font-semibold">
+            Description
+          </label>
+          <Textarea
+            name="description"
+            id="description"
+            placeholder="Description"
+            defaultValue={""}
+            className={`border ${
+              actionData?.errors?.description ? "border-red-500" : ""
+            }`}
+          />
+          {actionData?.errors?.description && (
+            <p className="mt-1 text-red-500">{actionData.errors.description}</p>
+          )}
 
-        {/* Tags Input */}
-        <label htmlFor="tags" className="mb-1 block font-semibold">
-          Tags (comma-separated):
-        </label>
-        <input
-          type="text"
-          name="tags"
-          id="tags"
-          placeholder="e.g. spicy,vegan"
-          defaultValue={""}
-          className={`border ${
-            actionData?.errors?.tags ? "border-red-500" : ""
-          }`}
-        />
-        {actionData?.errors?.tags && (
-          <p className="mt-1 text-red-500">{actionData.errors.tags}</p>
-        )}
+          {/* Tags Input */}
+          <label htmlFor="tags" className="mb-1 block font-semibold">
+            Tags (comma-separated)
+          </label>
+          <Input
+            type="text"
+            name="tags"
+            id="tags"
+            placeholder="e.g. spicy,vegan"
+            defaultValue={""}
+            className={`border ${
+              actionData?.errors?.tags ? "border-red-500" : ""
+            }`}
+          />
+          {actionData?.errors?.tags && (
+            <p className="mt-1 text-red-500">{actionData.errors.tags}</p>
+          )}
 
-        {/* Allergy Select */}
-        <label htmlFor="allergies" className="mb-1 block font-semibold">
-          Allergies:
-        </label>
-        <select
-          name="allergies"
-          id="allergies"
-          multiple
-          defaultValue={[]}
-          className={`border ${
-            actionData?.errors?.allergies ? "border-red-500" : ""
-          }`}
-        >
-          {allergyOptions.map((allergy) => (
-            <option key={allergy.value} value={allergy.value}>
-              {allergy.label}
-            </option>
-          ))}
-        </select>
-        {actionData?.errors?.allergies && (
-          <p className="mt-1 text-red-500">{actionData.errors.allergies}</p>
-        )}
+          {/* Allergy Badges */}
+          <fieldset>
+            <legend className="mb-1 block font-semibold">Allergies</legend>
+            <div className="flex flex-wrap gap-2">
+              {allergyOptions.map((allergy) => (
+                <Badge
+                  key={allergy.value}
+                  variant={
+                    selectedAllergies.includes(allergy.value)
+                      ? "default"
+                      : "outline"
+                  }
+                  className="cursor-pointer"
+                  onClick={() => handleAllergyToggle(allergy.value)}
+                >
+                  <input
+                    type="checkbox"
+                    name="allergies"
+                    value={allergy.value}
+                    checked={selectedAllergies.includes(allergy.value)}
+                    onChange={() => {}}
+                    className="sr-only"
+                  />
+                  {allergy.label}
+                  {selectedAllergies.includes(allergy.value) && (
+                    <X className="ml-1 h-3 w-3" />
+                  )}
+                </Badge>
+              ))}
+            </div>
+          </fieldset>
+          {actionData?.errors?.allergies && (
+            <p className="mt-1 text-red-500">{actionData.errors.allergies}</p>
+          )}
 
-        {/* Season Select */}
-        <select
-          name="seasons"
-          id="seasons"
-          multiple
-          defaultValue={[]}
-          className={`border ${actionData?.errors?.seasons ? "border-red-500" : ""}`}
-        >
-          {seasonOptions.map((season) => (
-            <option key={season.value} value={season.value}>
-              {season.label}
-            </option>
-          ))}
-        </select>
-        {actionData?.errors?.seasons && (
-          <p className="mt-1 text-red-500">{actionData.errors.seasons}</p>
-        )}
+          {/* Season Badges */}
+          <fieldset>
+            <legend className="mb-1 block font-semibold">Seasons</legend>
+            <div className="flex flex-wrap gap-2">
+              {seasonOptions.map((season) => (
+                <Badge
+                  key={season.value}
+                  variant={
+                    selectedSeasons.includes(season.value)
+                      ? "default"
+                      : "outline"
+                  }
+                  className="cursor-pointer"
+                  onClick={() => handleSeasonToggle(season.value)}
+                >
+                  <input
+                    type="checkbox"
+                    name="season"
+                    value={season.value}
+                    checked={selectedSeasons.includes(season.value)}
+                    onChange={() => {}}
+                    className="sr-only"
+                  />
+                  {season.label}
+                  {selectedSeasons.includes(season.value) && (
+                    <X className="ml-1 h-3 w-3" />
+                  )}
+                </Badge>
+              ))}
+            </div>
+          </fieldset>
+          {actionData?.errors?.seasons && (
+            <p className="mt-1 text-red-500">{actionData.errors.seasons}</p>
+          )}
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          className="mt-3 rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700"
-        >
-          Save
-        </button>
-      </Form>
-    </section>
+          {/* Submit button */}
+          <button
+            type="submit"
+            className="mt-3 rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700"
+          >
+            Save
+          </button>
+        </Form>
+      </ContentWrapper>
+    </Ribbon>
   );
 }
 
@@ -132,7 +189,8 @@ export async function action({ request }) {
   const { title, description, tags } = Object.fromEntries(form);
 
   const allergies = form.getAll("allergies"); // Get all selected allergies
-  const seasons = form.getAll("seasons"); // Get all selected seasons
+  const seasons = form.getAll("season"); // Get all selected seasons
+  console.log(seasons);
 
   // Parse the comma-separated tags string into an array and trim whitespace
   const tagArray = tags
@@ -163,7 +221,7 @@ export async function action({ request }) {
       title: title,
       description: description,
       allergies: allergies,
-      season: seasons,
+      seasons: seasons,
       tags: tagIds, // Store tag ObjectIds in the Meal
     });
     await newMeal.save();

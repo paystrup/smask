@@ -45,7 +45,14 @@ module.exports = {
         ],
       },
     },
-
+    // shadcn/ui
+    {
+      files: ["app/shadcn/ui/**/*.{ts,tsx}"],
+      rules: {
+        "react/prop-types": "off",
+      },
+      ignore: ["className"],
+    },
     // Node
     {
       files: [".eslintrc.js"],

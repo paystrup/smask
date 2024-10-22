@@ -34,6 +34,9 @@ module.exports = {
         "plugin:react-hooks/recommended",
         "plugin:jsx-a11y/recommended",
       ],
+      rules: {
+        "react/prop-types": ["warn"],
+      },
       settings: {
         react: {
           version: "detect",
@@ -45,14 +48,7 @@ module.exports = {
         ],
       },
     },
-    // shadcn/ui
-    {
-      files: ["app/shadcn/ui/**/*.{ts,tsx}"],
-      rules: {
-        "react/prop-types": "off",
-      },
-      ignore: ["className"],
-    },
+
     // Node
     {
       files: [".eslintrc.js"],

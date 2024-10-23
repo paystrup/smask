@@ -1,3 +1,14 @@
+import { authenticator } from "~/services/auth.server";
+
+export async function loader({ request }) {
+  // Redirect to login if user is not authenticated
+  await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
+  return null;
+}
+
 export default function Index() {
   return (
     <div>

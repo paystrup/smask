@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import validateURL from "~/utils/schemaValidation";
+// import validateURL from "~/utils/schemaValidation";
 
 const { Schema } = mongoose;
 
@@ -71,13 +71,6 @@ const tagSchema = new mongoose.Schema({
 // User Schema
 const userSchema = new Schema(
   {
-    username: {
-      type: String,
-      required: true,
-      unique: [true, "Username already exists"],
-      minLength: [5, "Username must be at least 5 characters long"],
-      maxLength: [25, "Username must be max. 20 characters long"],
-    },
     firstName: {
       type: String,
       required: true,
@@ -99,14 +92,9 @@ const userSchema = new Schema(
       required: true,
       select: false, // Exclude pw from query results by default
     },
-    description: {
-      type: String,
-      maxLength: [100, "Bio must be max. 100 characters long"],
-    },
-    image: {
-      type: String,
-      validate: [validateURL, "Please fill a valid image URL"],
-      required: true,
+    admin: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },
@@ -202,6 +190,47 @@ const mealSchema = new Schema(
   { timestamps: true },
 );
 
+const mealDaySchema = new Schema(
+  {
+    date: {
+      type: Date,
+      required: true,
+      unique: true, // Ensure the date is unique
+    },
+    meals: [
+      {
+        meal: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Meal",
+          required: true,
+        },
+        startTime: {
+          type: Date,
+          required: true,
+        },
+        endTime: {
+          type: Date,
+          required: true,
+        },
+      },
+    ],
+    attendees: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        numberOfPeople: {
+          type: Number,
+          default: 1, // Default to 1 person
+        },
+      },
+    ],
+  },
+  { timestamps: true },
+);
+
 // Register models with mongoose
 export const models = [
   {
@@ -223,5 +252,10 @@ export const models = [
     name: "Meal",
     schema: mealSchema,
     collection: "meals",
+  },
+  {
+    name: "Mealday",
+    schema: mealDaySchema,
+    collection: "mealDays",
   },
 ];

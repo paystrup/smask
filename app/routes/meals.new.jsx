@@ -190,7 +190,6 @@ export async function action({ request }) {
 
   const allergies = form.getAll("allergies"); // Get all selected allergies
   const seasons = form.getAll("season"); // Get all selected seasons
-  console.log(seasons);
 
   // Parse the comma-separated tags string into an array and trim whitespace
   const tagArray = tags

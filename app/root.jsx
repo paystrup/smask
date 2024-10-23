@@ -8,6 +8,7 @@ import {
 } from "@remix-run/react";
 import styles from "./tailwind.css";
 import Nav from "./_components/Nav";
+import { authenticator } from "./services/auth.server";
 
 export const links = () => [
   {
@@ -20,6 +21,10 @@ export function meta() {
   return [{ title: "smask" }];
 }
 
+export async function loader({ request }) {
+  return await authenticator.isAuthenticated(request);
+}
+
 export default function App() {
   return (
     <html lang="en">
@@ -29,7 +34,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-slate-100 p-4 font-sans text-slate-800">
+      <body className="p-4 font-sans text-slate-800">
         <Nav />
         <Outlet />
         <ScrollRestoration />

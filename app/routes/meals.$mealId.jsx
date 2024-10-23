@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 export async function loader({ params }) {
   const meal = await mongoose.models.Meal.findById(params.mealId);
   if (!meal) {
-    throw new Response(`Couldn't find book with id ${params.mealId}`, {
+    throw new Response(`Couldn't find meal with id ${params.mealId}`, {
       status: 404,
     });
   }

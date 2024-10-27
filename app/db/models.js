@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-// import validateURL from "~/utils/schemaValidation";
+import validateURL from "~/utils/schemaValidation";
 
 const { Schema } = mongoose;
 
@@ -181,11 +181,11 @@ const mealSchema = new Schema(
         required: true,
       },
     ],
-    // image: {
-    //   type: String,
-    //   validate: [validateURL, "Please fill a valid image URL"],
-    //   required: true,
-    // },
+    image: {
+      type: String,
+      validate: [validateURL, "Please fill a valid image URL"],
+      required: false,
+    },
   },
   { timestamps: true },
 );

@@ -9,12 +9,13 @@ import ContentWrapper from "~/components/base/ContentWrapper";
 import Ribbon from "~/components/base/Ribbon";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { uploadImage } from "~/utils/uploadImage.server";
 
 export default function CreateMeal() {
   const actionData = useActionData();
-
   const [selectedAllergies, setSelectedAllergies] = useState([]);
   const [selectedSeasons, setSelectedSeasons] = useState([]);
+  const [image, setImage] = useState(null);
 
   // Map through the enums to create options
   const allergyOptions = Object.values(AllergyType).map((allergy) => ({
@@ -43,11 +44,29 @@ export default function CreateMeal() {
     );
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file.size < 500000) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert("Image size must be less than 0.5MB.");
+      event.target.value = "";
+    }
+  };
+
   return (
     <Ribbon className="flex flex-col gap-8">
       <ContentWrapper>
         <h1 className="mb-4 text-2xl font-bold">Add new meal</h1>
-        <Form method="post" className="flex flex-col gap-4">
+        <Form
+          method="post"
+          encType="multipart/form-data"
+          className="flex flex-col gap-4"
+        >
           {/* Title Input */}
           <label htmlFor="title" className="mb-1 block font-semibold">
             Title
@@ -116,7 +135,7 @@ export default function CreateMeal() {
                   className="cursor-pointer"
                   onClick={() => handleAllergyToggle(allergy.value)}
                 >
-                  <input
+                  <Input
                     type="checkbox"
                     name="allergies"
                     value={allergy.value}
@@ -151,9 +170,9 @@ export default function CreateMeal() {
                   className="cursor-pointer"
                   onClick={() => handleSeasonToggle(season.value)}
                 >
-                  <input
+                  <Input
                     type="checkbox"
-                    name="season"
+                    name="seasons"
                     value={season.value}
                     checked={selectedSeasons.includes(season.value)}
                     onChange={() => {}}
@@ -171,12 +190,30 @@ export default function CreateMeal() {
             <p className="mt-1 text-red-500">{actionData.errors.seasons}</p>
           )}
 
+          {/* Image Upload */}
+          <label htmlFor="image" className="mb-1 block font-semibold">
+            Upload Image
+          </label>
+          <Input
+            type="file"
+            name="image"
+            id="image"
+            onChange={handleImageChange}
+          />
+          {image && (
+            <img
+              src={image}
+              alt="Selected"
+              className="mt-4 h-48 w-48 object-cover rounded-lg"
+            />
+          )}
+
           {/* Submit button */}
           <button
             type="submit"
             className="mt-3 rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700"
           >
-            Save
+            Add Meal
           </button>
         </Form>
       </ContentWrapper>
@@ -189,7 +226,7 @@ export async function action({ request }) {
   const { title, description, tags } = Object.fromEntries(form);
 
   const allergies = form.getAll("allergies"); // Get all selected allergies
-  const seasons = form.getAll("season"); // Get all selected seasons
+  const seasons = form.getAll("seasons"); // Get all selected seasons
 
   // Parse the comma-separated tags string into an array and trim whitespace
   const tagArray = tags
@@ -215,6 +252,13 @@ export async function action({ request }) {
     }),
   );
 
+  // Handle image upload
+  const image = form.get("image");
+  let imageUrl = null;
+  if (image && image.size > 0) {
+    imageUrl = await uploadImage(image); // Assuming uploadImage returns the URL or path of the uploaded image
+  }
+
   try {
     const newMeal = new mongoose.models.Meal({
       title: title,
@@ -222,6 +266,7 @@ export async function action({ request }) {
       allergies: allergies,
       seasons: seasons,
       tags: tagIds, // Store tag ObjectIds in the Meal
+      image: imageUrl || null,
     });
     await newMeal.save();
     return redirect(`/meals/${newMeal._id}`);

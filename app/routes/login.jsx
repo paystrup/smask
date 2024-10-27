@@ -9,6 +9,8 @@ import { authenticator } from "~/services/auth.server";
 import { json } from "@remix-run/node";
 import { sessionStorage } from "~/services/session.server";
 import ErrorMessage from "~/_components/errorhandling/ErrorMessage";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 
 export function meta() {
   return [{ title: "smask | Login" }];
@@ -36,33 +38,34 @@ export default function LoginPage() {
   return (
     <section className="flex flex-col items-center px-4 lg:px-8 2xl:px-0">
       <div className="flex flex-col items-center gap-4 max-w-screen-desktop w-full">
-        <h1 className="text-3xl font-semibold">Login</h1>
-        <Form method="post" className="flex flex-col max-w-xl w-full">
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            placeholder="Your email..."
-            required
-            className="py-2 px-2 mb-4 border rounded-md bg-neutral-100"
-          />
+        <h1 className="text-4xl font-bold text-center">Login to use Smask</h1>
+        <Form method="post" className="flex flex-col max-w-xl w-full gap-8">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="email">Email</label>
+              <Input
+                id="email"
+                type="email"
+                name="email"
+                placeholder="Your email..."
+                required
+              />
+            </div>
 
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            name="password"
-            placeholder="Your password..."
-            autoComplete="current-password"
-            required
-            className="py-2 px-2 mb-4 border rounded-md bg-neutral-100"
-          />
-          <div>
-            <button className="py-2 px-2 bg-primaryYellow w-full mt-2 rounded-md hover:opacity-60 duration-200 transition-all">
-              Sign In
-            </button>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="password">Password</label>
+              <Input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Your password..."
+                autoComplete="current-password"
+                required
+              />
+            </div>
           </div>
+
+          <Button type="submit">Sign In</Button>
 
           {/* SHOW LOGIN ERR */}
           {loaderData?.error?.message && (
@@ -71,9 +74,10 @@ export default function LoginPage() {
             </div>
           )}
         </Form>
+
         <Link
           to="/signup"
-          className="mt-4 hover:opacity-60 duration-200 transition-all"
+          className="hover:opacity-60 duration-200 transition-all"
         >
           Don&apos;t have a user? Create one here 🎉
         </Link>

@@ -7,8 +7,14 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import styles from "./tailwind.css";
-import Nav from "./_components/Nav";
+// import Nav from "./_components/Nav";
 import { authenticator } from "./services/auth.server";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "./components/ui/sidebar";
+import { AppSidebar } from "./components/ui/AppSidebar";
 
 export const links = () => [
   {
@@ -34,12 +40,22 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="p-4 font-sans text-slate-800">
-        <Nav />
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+
+      <body>
+        {/* <Nav /> */}
+        <SidebarProvider>
+          <AppSidebar />
+
+          <SidebarInset className="p-4 font-sans text-slate-800">
+            <main>
+              <SidebarTrigger />
+              <Outlet />
+              <ScrollRestoration />
+              <Scripts />
+              <LiveReload />
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
       </body>
     </html>
   );

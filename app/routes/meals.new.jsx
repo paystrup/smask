@@ -59,7 +59,7 @@ export default function CreateMeal() {
   };
 
   return (
-    <Ribbon className="flex flex-col gap-8">
+    <Ribbon className="flex flex-col gap-8 max-w-full">
       <ContentWrapper>
         <h1 className="mb-4 text-2xl font-bold">Add new meal</h1>
         <Form

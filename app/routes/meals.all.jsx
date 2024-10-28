@@ -26,15 +26,18 @@ export default function Meals() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <h2 className="mb-3 text-2xl font-bold">
-          All your meals {"(" + meals?.length + ")"}
+        <h2 className="m-3 mt-8 text-2xl font-bold tracking-tight">
+          All meals {"(" + meals?.length + ")"}
         </h2>
 
         <ul className="grid grid-cols-12 gap-8">
           {meals &&
             meals.map((meal) => {
               return (
-                <li key={meal._id} className="col-span-3">
+                <li
+                  key={meal._id}
+                  className="col-span-12 xl:col-span-6 2xl:col-span-3"
+                >
                   <MealCard
                     link={`/meals/${meal._id}`}
                     title={meal.title}

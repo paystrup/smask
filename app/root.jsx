@@ -7,7 +7,6 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import styles from "./tailwind.css";
-// import Nav from "./_components/Nav";
 import { authenticator } from "./services/auth.server";
 import {
   SidebarInset,
@@ -24,7 +23,7 @@ export const links = () => [
 ];
 
 export function meta() {
-  return [{ title: "smask" }];
+  return [{ title: "SMASK" }];
 }
 
 export async function loader({ request }) {
@@ -47,13 +46,11 @@ export default function App() {
           <AppSidebar />
 
           <SidebarInset className="p-4 font-sans text-slate-800">
-            <main>
-              <SidebarTrigger />
-              <Outlet />
-              <ScrollRestoration />
-              <Scripts />
-              <LiveReload />
-            </main>
+            <SidebarTrigger />
+            <Outlet />
+            <ScrollRestoration />
+            <Scripts />
+            <LiveReload />
           </SidebarInset>
         </SidebarProvider>
       </body>

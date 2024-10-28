@@ -2,13 +2,12 @@ import {
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-  useNavigate,
 } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import mongoose from "mongoose";
 import ContentWrapper from "~/components/base/ContentWrapper";
-import { MoveLeft } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import BackButton from "~/_components/navigation/BackButton";
 
 export async function loader({ params }) {
   const meal = await mongoose.models.Meal.findById(params.mealId).populate(
@@ -24,16 +23,11 @@ export async function loader({ params }) {
 
 export default function BookPage() {
   const meal = useLoaderData();
-  const navigate = useNavigate();
-  const goBack = () => navigate(-1);
   const tagsToDisplay = 10;
 
   return (
     <section className="mt-12">
-      <button onClick={goBack} className="flex gap-2 mb-8">
-        <MoveLeft size={24} />
-        <p>Go back</p>
-      </button>
+      <BackButton />
       <ContentWrapper>
         <div className="gap-8 grid grid-cols-12">
           {meal?.image ? (

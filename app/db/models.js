@@ -231,6 +231,9 @@ const mealDaySchema = new Schema(
   { timestamps: true },
 );
 
+// Indexing for text search
+mealSchema.index({ title: "text", description: "text", tags: "text" });
+
 // Register models with mongoose
 export const models = [
   {

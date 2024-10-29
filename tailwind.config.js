@@ -14,6 +14,9 @@ export default {
         sans: ["Geist", ...defaultTheme.fontFamily.sans],
       },
       colors: {
+        primary: {
+          blue: "#0e3cf6",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

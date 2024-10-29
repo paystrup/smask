@@ -1,9 +1,10 @@
 import { Form, useLoaderData } from "@remix-run/react";
-import { Search } from "lucide-react";
+import { AlignJustify, CreditCard, Search } from "lucide-react";
 import mongoose from "mongoose";
 import MealCard from "~/_components/cards/MealCard";
 import { Input } from "~/components/ui/input";
 import { json } from "@remix-run/node";
+import { useState } from "react";
 
 export function meta() {
   return [{ title: "smask | All meals" }];
@@ -36,7 +37,7 @@ export async function loader({ request }) {
 
 export default function Meals() {
   const { meals, query } = useLoaderData();
-  console.log(meals, query);
+  const [view, setView] = useState("grid");
   const title = "Search for delicious meals in your Smask library";
   const noResultsText = "No meals found. Please try another search.";
   const queryFallback = query
@@ -72,10 +73,32 @@ export default function Meals() {
         </Form>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <h2 className="m-3 mt-8 text-2xl font-bold tracking-tight">
-          {queryFallback}
-        </h2>
+      <div className="flex flex-col gap-12 py-20">
+        <div className="flex justify-between gap-4 items-center">
+          <h2 className="text-2xl font-bold tracking-tight">{queryFallback}</h2>
+
+          <div className="flex gap-4">
+            <p>View</p>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setView("grid")}
+                className={`hover:opacity-50 transition-opacity ease-in-out duration-300 ${view !== "grid" ? "opacity-30" : ""}`}
+                aria-label="Change to grid view"
+              >
+                <CreditCard className="h-6 w-6" />
+              </button>
+
+              <button
+                onClick={() => setView("list")}
+                className={`hover:opacity-50 transition-opacity ease-in-out duration-300 ${view !== "list" ? "opacity-30" : ""}`}
+                aria-label="Change to list view"
+              >
+                <AlignJustify className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </div>
 
         {meals.length > 0 ? (
           <ul className="grid grid-cols-12 gap-8">
@@ -83,7 +106,7 @@ export default function Meals() {
               return (
                 <li
                   key={meal._id}
-                  className="col-span-12 xl:col-span-6 2xl:col-span-3"
+                  className={`${view === "list" ? "col-span-12" : "col-span-12 xl:col-span-6 2xl:col-span-3"}`}
                 >
                   <MealCard
                     link={`/meals/${meal._id}`}
@@ -93,6 +116,7 @@ export default function Meals() {
                     allergies={meal.allergies}
                     seasons={meal.seasons}
                     imageUrl={meal.image}
+                    view={view}
                   />
                 </li>
               );

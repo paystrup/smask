@@ -1,34 +1,23 @@
-import { Form, useLoaderData } from "@remix-run/react";
-import { json, redirect } from "@remix-run/node";
-import mongoose from "mongoose";
-import { authenticator } from "~/services/auth.server";
 import { useState } from "react";
 import {
   addWeeks,
-  eachDayOfInterval,
+  startOfWeek,
   endOfWeek,
+  eachDayOfInterval,
   format,
-  getDay,
-  getWeek,
   isSameDay,
   isToday,
-  startOfWeek,
+  getWeek,
+  getDay,
 } from "date-fns";
-import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ScrollArea } from "~/components/ui/scroll-area";
+import { ScrollArea } from "./scroll-area";
+import { Button } from "./button";
+import { Form, json, redirect } from "@remix-run/react";
+import { authenticator } from "~/services/auth.server";
+import mongoose from "mongoose";
+import { useLoaderData } from "react-router";
 
-export const loader = async ({ request }) => {
-  const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: "/login",
-  });
-  const userData = await mongoose.models.User.findById(user._id);
-  const userMeals = await mongoose.models.Mealday.find({
-    attendees: { $elemMatch: { user: user._id } },
-  });
-  const mealDays = await mongoose.models.Mealday.find();
-  return json({ user, userData, mealDays, userMeals });
-};
 // Sample events data
 const eventsData = {
   "2024-10-30": [
@@ -37,14 +26,14 @@ const eventsData = {
       title: "Breakfast",
       startTime: "09:00",
       endTime: "10:00",
-      meal: "Test",
+      meal: "Pis og lort pasta med pis og lort i",
     },
     {
       id: 2,
       title: "Lunch",
       startTime: "14:00",
       endTime: "15:30",
-      meal: "Test",
+      meal: "Pis og lort pasta med pis og lort i",
     },
   ],
   "2024-10-31": [
@@ -53,14 +42,21 @@ const eventsData = {
       title: "Lunch",
       startTime: "11:00",
       endTime: "12:00",
-      meal: "Test",
+      meal: "Pis og lort pasta med pis og lort i",
     },
   ],
+  // Add more events for other days as needed
 };
-export default function CreateMealDays() {
-  const { user, mealDays, userMeals } = useLoaderData();
-  console.log(mealDays, userMeals);
 
+export async function loader({ request }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+  return json({ user });
+}
+
+export default function WeeklyCalendar() {
+  const { user } = useLoaderData();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const isCurrentWeek = isSameDay(currentWeek, new Date());
   const hideWeekends = true;
@@ -128,56 +124,54 @@ export default function CreateMealDays() {
         {days.map((day) => (
           <div
             key={day.toISOString()}
-            className={`flex flex-col justify-between shadow text-center h-full overflow-hidden ${
+            className={`shadow text-center h-full overflow-hidden ${
               isToday(day) ? "bg-gray-100" : "bg-white"
             }`}
           >
-            <div>
-              <div
-                className={`p-4 ${isToday(day) ? "bg-blue-50" : "bg-gray-50"} border-b`}
+            <div
+              className={`p-4 ${isToday(day) ? "bg-blue-50" : "bg-gray-50"} border-b`}
+            >
+              <h2
+                className={`font-semibold text-xl ${
+                  isToday(day) ? "text-blue-800" : "text-gray-800"
+                }`}
               >
-                <h2
-                  className={`font-semibold text-xl ${
-                    isToday(day) ? "text-blue-800" : "text-gray-800"
-                  }`}
-                >
-                  {format(day, "EEE")}
-                </h2>
-                <p
-                  className={`text-sm ${
-                    isToday(day) ? "text-blue-600" : "text-gray-600"
-                  }`}
-                >
-                  {format(day, "MMMM d")}
-                </p>
-              </div>
-
-              <ScrollArea className="mt-8">
-                <div className="space-y-2">
-                  {eventsData[format(day, "yyyy-MM-dd")]?.map((event) => (
-                    <div
-                      key={event.id}
-                      className="bg-blue-50 border border-blue-200 p-4 rounded-lg"
-                    >
-                      <h3 className="font-semibold text-blue-800">
-                        {event.title}
-                      </h3>
-                      <p className="text-sm text-blue-600">
-                        {event.startTime} - {event.endTime}
-                      </p>
-                      <p className="text-sm ">{event.meal}</p>
-                    </div>
-                  ))}
-                  {!eventsData[format(day, "yyyy-MM-dd")] && (
-                    <p className="text-gray-500 text-center">No meals yet</p>
-                  )}
-                </div>
-              </ScrollArea>
+                {format(day, "EEE")}
+              </h2>
+              <p
+                className={`text-sm ${
+                  isToday(day) ? "text-blue-600" : "text-gray-600"
+                }`}
+              >
+                {format(day, "MMMM d")}
+              </p>
             </div>
+
+            <ScrollArea className="mt-8">
+              <div className="space-y-2">
+                {eventsData[format(day, "yyyy-MM-dd")]?.map((event) => (
+                  <div
+                    key={event.id}
+                    className="bg-blue-50 border border-blue-200 p-4 rounded-lg"
+                  >
+                    <h3 className="font-semibold text-blue-800">
+                      {event.title}
+                    </h3>
+                    <p className="text-sm text-blue-600">
+                      {event.startTime} - {event.endTime}
+                    </p>
+                    <p className="text-sm ">{event.meal}</p>
+                  </div>
+                ))}
+                {!eventsData[format(day, "yyyy-MM-dd")] && (
+                  <p className="text-gray-500 text-center">No meals yet</p>
+                )}
+              </div>
+            </ScrollArea>
 
             {/* Attend Button Form */}
             {user && (
-              <Form method="post" className="p-4 w-full self-end">
+              <Form method="post" className="p-4">
                 <input type="hidden" name="date" value={day.toISOString()} />
                 <input type="hidden" name="userId" value={user._id} />
                 <input

@@ -9,6 +9,7 @@ import {
   Settings,
   Sparkles,
   User,
+  Users,
   Utensils,
 } from "lucide-react";
 import {
@@ -32,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { Form, Link, NavLink, useLoaderData } from "@remix-run/react";
 import { Separator } from "./separator";
 import Avatar from "~/_components/Avatar";
 
@@ -124,13 +125,43 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.url}>
+                    <NavLink
+                      to={item.url}
+                      style={({ isActive }) => {
+                        return {
+                          fontWeight: isActive ? "bold" : "",
+                        };
+                      }}
+                    >
                       <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
+                      <p>{item.title}</p>
+                    </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/users"
+                    style={({ isActive }) => {
+                      return {
+                        fontWeight: isActive ? "bold" : "",
+                      };
+                    }}
+                  >
+                    <Users />
+                    <p>Users</p>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

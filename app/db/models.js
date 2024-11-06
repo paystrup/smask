@@ -197,6 +197,14 @@ const mealDaySchema = new Schema(
       required: true,
       unique: true, // Ensure the date is unique
     },
+    visible: {
+      type: Boolean,
+      default: false,
+    },
+    canceled: {
+      type: Boolean,
+      default: false,
+    },
     meals: [
       {
         meal: {

@@ -57,6 +57,11 @@ export const Seasons = {
   CHRISTMAS: "christmas",
 };
 
+export const Diets = {
+  VEGAN: "vegan",
+  VEGETARIAN: "vegetarian",
+};
+
 const tagSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -80,6 +85,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
       maxLength: [20, "Lastname must be max. 20 characters long"],
+    },
+    birthday: {
+      type: Date,
+      required: true,
+    },
+    diet: {
+      type: String,
+      enum: Object.values(Diets),
+      default: undefined,
     },
     email: {
       type: String,

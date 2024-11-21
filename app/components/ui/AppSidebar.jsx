@@ -117,54 +117,65 @@ export function AppSidebar() {
           </svg>
         </Link>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      style={({ isActive }) => {
-                        return {
-                          fontWeight: isActive ? "bold" : "",
-                        };
-                      }}
-                    >
-                      <item.icon />
-                      <p>{item.title}</p>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/users"
-                    style={({ isActive }) => {
-                      return {
-                        fontWeight: isActive ? "bold" : "",
-                      };
-                    }}
-                  >
-                    <Users />
-                    <p>Users</p>
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent>
+        {user ? (
+          <>
+            <SidebarGroup>
+              <SidebarGroupLabel>Application</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                          to={item.url}
+                          style={({ isActive }) => {
+                            return {
+                              fontWeight: isActive ? "bold" : "",
+                            };
+                          }}
+                        >
+                          <item.icon />
+                          <p>{item.title}</p>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/users"
+                        style={({ isActive }) => {
+                          return {
+                            fontWeight: isActive ? "bold" : "",
+                          };
+                        }}
+                      >
+                        <Users />
+                        <p>Users</p>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        ) : (
+          <SidebarGroup className="px-4 mt-6 text-center">
+            <p>
+              You must login or create a user to access all features of Smask
+            </p>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       {user ? (

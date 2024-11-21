@@ -1,3 +1,4 @@
+import { addYears, differenceInDays } from "date-fns";
 import PropTypes from "prop-types";
 import { Badge } from "~/components/ui/badge";
 
@@ -11,6 +12,16 @@ export default function Profile({ user, userData }) {
       createdAt: PropTypes.string.isRequired,
     }).isRequired,
   };
+
+  const today = new Date();
+  const birthdayThisYear = new Date(
+    today.getFullYear(),
+    new Date(user.birthday).getMonth(),
+    new Date(user.birthday).getDate(),
+  );
+  const nextBirthday =
+    birthdayThisYear < today ? addYears(birthdayThisYear, 1) : birthdayThisYear;
+  const daysUntilBirthday = differenceInDays(nextBirthday, today);
 
   if (!userData || !user) {
     return (
@@ -40,7 +51,11 @@ export default function Profile({ user, userData }) {
             Created {new Date(userData.createdAt).toLocaleDateString()}
           </Badge>
 
-          <Badge className="text-sm">🎉 Birthday in X days</Badge>
+          {user.birthday && (
+            <Badge className="text-sm">
+              🎉 Birthday in {daysUntilBirthday} days
+            </Badge>
+          )}
         </div>
 
         <h3 className="text-xl tracking-tight">

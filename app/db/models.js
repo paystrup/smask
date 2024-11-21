@@ -4,6 +4,10 @@ import validateURL from "~/utils/schemaValidation";
 
 const { Schema } = mongoose;
 
+//
+// ENUMS
+//
+
 // Expanded Enum for predefined ingredient categories
 export const IngredientCategory = {
   VEGETABLE: "Vegetable",
@@ -58,6 +62,7 @@ export const Seasons = {
 };
 
 export const Diets = {
+  NONE: "none",
   VEGAN: "vegan",
   VEGETARIAN: "vegetarian",
 };
@@ -73,6 +78,9 @@ const tagSchema = new mongoose.Schema({
   },
 });
 
+//
+// SCHEMAS
+//
 // User Schema
 const userSchema = new Schema(
   {
@@ -101,6 +109,11 @@ const userSchema = new Schema(
       unique: [true, "Account with this email already exists"],
       maxLength: [30, "Your email can be max. 30 characters long"],
     },
+    favoriteMeal: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Meal",
+      required: false,
+    },
     password: {
       type: String,
       required: true,
@@ -110,24 +123,38 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    location: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Location",
+      required: true,
+    },
+    image: {
+      type: String,
+      validate: [validateURL, "Please fill a valid image URL"],
+      required: false,
+    },
   },
   { timestamps: true },
 );
 
-// Pre-save hook for user password hashing
-userSchema.pre("validate", async function (next) {
-  const user = this;
-  if (!user.isModified("password")) {
-    return next();
-  }
-  try {
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+const locationSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      minlength: [3, "Location name must be at least 3 characters long"],
+      maxlength: [50, "Location name must be less than 50 characters long"],
+    },
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+  },
+  { timestamps: true },
+);
 
 // Ingredient Schema
 // const ingredientSchema = new Schema(
@@ -253,6 +280,21 @@ const mealDaySchema = new Schema(
   { timestamps: true },
 );
 
+// Pre-save hook for user password hashing
+userSchema.pre("validate", async function (next) {
+  const user = this;
+  if (!user.isModified("password")) {
+    return next();
+  }
+  try {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Indexing for text search
 mealSchema.index({ title: "text", description: "text", tags: "text" });
 
@@ -282,5 +324,10 @@ export const models = [
     name: "Mealday",
     schema: mealDaySchema,
     collection: "mealDays",
+  },
+  {
+    name: "Location",
+    schema: locationSchema,
+    collection: "locations",
   },
 ];

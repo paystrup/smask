@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import mongoose from "mongoose";
-import ErrorMessage from "~/_components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/errorhandling/ErrorMessage";
 import { Diets } from "~/db/models";
 import {
   Select,
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { sendintroMail } from "~/utils/nodeMailer.server";
+import { sendintroMail } from "~/utils/server/nodeMailer.server";
 import { authenticator } from "~/services/auth.server";
 
 export async function loader({ params, request }) {

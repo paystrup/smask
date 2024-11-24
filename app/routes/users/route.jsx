@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import mongoose from "mongoose";
-import Avatar from "~/_components/Avatar";
+import Avatar from "~/components/avatar/Avatar";
 import { Badge } from "~/components/ui/badge";
 import {
   Table,

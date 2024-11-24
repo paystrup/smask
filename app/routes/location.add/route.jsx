@@ -2,8 +2,8 @@ import { Form, useActionData } from "@remix-run/react";
 import { redirect, json } from "@remix-run/node";
 import mongoose from "mongoose";
 import { Input } from "~/components/ui/input";
-import ContentWrapper from "~/components/base/ContentWrapper";
-import Ribbon from "~/components/base/Ribbon";
+import ContentWrapper from "~/components/_foundation/ContentWrapper";
+import Ribbon from "~/components/_foundation/Ribbon";
 
 export default function AddLocation() {
   const actionData = useActionData();

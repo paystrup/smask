@@ -8,7 +8,7 @@ import {
 import { json, redirect } from "@remix-run/node";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import ErrorMessage from "~/_components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/errorhandling/ErrorMessage";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 
@@ -70,8 +70,6 @@ export const action = async ({ request }) => {
     let location = await mongoose.models.Location.findOne({
       code: code,
     });
-
-    console.log(location);
 
     if (!location) {
       const errorMessage =

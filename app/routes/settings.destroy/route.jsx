@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
-import { sendDeletionMail } from "~/utils/nodeMailer.server";
+import { sendDeletionMail } from "~/utils/server/nodeMailer.server";
 
 // Remove the user from the database and log them out
 // TODO: Delete all data associated with the user, mealdays attendance etc.

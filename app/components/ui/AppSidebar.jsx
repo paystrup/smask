@@ -35,7 +35,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Form, Link, NavLink, useLoaderData } from "@remix-run/react";
 import { Separator } from "./separator";
-import Avatar from "~/_components/Avatar";
+import Avatar from "~/components/avatar/Avatar";
 
 // Menu items.
 const items = [

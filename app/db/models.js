@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import validateURL from "~/utils/schemaValidation";
+import validateURL from "~/utils/server/schemaValidation";
 
 const { Schema } = mongoose;
 
@@ -132,6 +132,10 @@ const userSchema = new Schema(
       type: String,
       validate: [validateURL, "Please fill a valid image URL"],
       required: false,
+    },
+    resetPasswordToken: {
+      type: String,
+      select: false, // Exclude from query results by default
     },
   },
   { timestamps: true },

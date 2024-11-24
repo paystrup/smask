@@ -5,11 +5,11 @@ import { AllergyType, Seasons } from "~/db/models";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Badge } from "~/components/ui/badge";
-import ContentWrapper from "~/components/base/ContentWrapper";
-import Ribbon from "~/components/base/Ribbon";
+import ContentWrapper from "~/components/_foundation/ContentWrapper";
+import Ribbon from "~/components/_foundation/Ribbon";
 import { X } from "lucide-react";
 import { useState } from "react";
-import { uploadImage } from "~/utils/uploadImage.server";
+import { uploadImage } from "~/utils/server/uploadImage.server";
 import { authenticator } from "~/services/auth.server";
 
 export async function loader({ request }) {

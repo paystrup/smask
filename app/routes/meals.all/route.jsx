@@ -1,7 +1,6 @@
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { AlignJustify, CreditCard, Search } from "lucide-react";
 import mongoose from "mongoose";
-import MealCard from "~/_components/cards/MealCard";
 import { Input } from "~/components/ui/input";
 import { json } from "@remix-run/node";
 import { useEffect, useState } from "react";
@@ -15,6 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Seasons } from "~/db/models";
+import MealCard from "~/components/cards/MealCard";
 
 export function meta() {
   return [{ title: "SMASK | All meals" }];

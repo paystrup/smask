@@ -2,7 +2,7 @@ import { useLoaderData } from "@remix-run/react";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 import { json } from "@remix-run/node";
-import Profile from "~/_components/profile/Profile";
+import Profile from "~/components/profile/Profile";
 
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {

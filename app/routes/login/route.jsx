@@ -8,7 +8,7 @@ import {
 import { authenticator } from "~/services/auth.server";
 import { json } from "@remix-run/node";
 import { sessionStorage } from "~/services/session.server";
-import ErrorMessage from "~/_components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/errorhandling/ErrorMessage";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
@@ -37,7 +37,7 @@ export default function LoginPage() {
 
   return (
     <section className="flex flex-col items-center px-4 lg:px-8 2xl:px-0">
-      <div className="flex flex-col items-center gap-4 max-w-screen-desktop w-full">
+      <div className="flex flex-col items-center gap-4 max-w-xl w-full">
         <div className="flex flex-col gap-6 my-12 text-center max-w-[45ch]">
           <h1 className="text-5xl font-semibold tracking-tighter">
             Login to use Smask
@@ -46,7 +46,7 @@ export default function LoginPage() {
             You must login to access all features of Smask
           </p>
         </div>
-        <Form method="post" className="flex flex-col max-w-xl w-full gap-8">
+        <Form method="post" className="flex flex-col w-full gap-8">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="email">Email</label>
@@ -82,12 +82,21 @@ export default function LoginPage() {
           <Button type="submit">Sign In</Button>
         </Form>
 
-        <Link
-          to="/signup/location"
-          className="hover:opacity-60 duration-200 transition-all"
-        >
-          Don&apos;t have a user? Sign up here 🎉
-        </Link>
+        <div className="flex flex-col text-center sm:flex-row sm:text-start justify-between gap-6 sm:gap-2 w-full">
+          <Link
+            to="/signup/location"
+            className="hover:opacity-60 duration-200 transition-all"
+          >
+            Don&apos;t have a user? Sign up here 🎉
+          </Link>
+
+          <Link
+            to="/forgotpassword"
+            className="hover:opacity-60 duration-200 transition-all"
+          >
+            Forgot password
+          </Link>
+        </div>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import { addYears, differenceInDays } from "date-fns";
 import PropTypes from "prop-types";
 import { Badge } from "~/components/ui/badge";
+import Avatar from "../avatar/Avatar";
 
 export default function Profile({ user, userData }) {
   Profile.propTypes = {
@@ -12,7 +13,7 @@ export default function Profile({ user, userData }) {
       createdAt: PropTypes.string.isRequired,
     }).isRequired,
   };
-
+  // Display amount of days till user's birthday
   const today = new Date();
   const birthdayThisYear = new Date(
     today.getFullYear(),
@@ -34,7 +35,10 @@ export default function Profile({ user, userData }) {
   return (
     <div className="flex flex-col justify-center items-center">
       <div className="flex flex-col gap-2 items-center justify-center w-full mb-12">
-        <div className="h-20 w-20 bg-black rounded-full mb-2"></div>
+        <Avatar
+          className="w-16 h-16 text-2xl font-medium"
+          name={userData.firstName}
+        />
         <h1 className="text-4xl font-semibold tracking-tight text-center">
           {userData.firstName} {userData.lastName}
         </h1>
@@ -47,6 +51,10 @@ export default function Profile({ user, userData }) {
         </a>
 
         <div className="flex gap-2 my-6">
+          <Badge variant="primary" className="text-sm capitalize">
+            {user.diet === "none" ? "No diet preference" : user.diet}
+          </Badge>
+
           <Badge className="text-sm">
             Created {new Date(userData.createdAt).toLocaleDateString()}
           </Badge>

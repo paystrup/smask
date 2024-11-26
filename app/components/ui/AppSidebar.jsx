@@ -170,7 +170,7 @@ export function AppSidebar() {
             </SidebarGroup>
           </>
         ) : (
-          <SidebarGroup className="px-4 mt-6 text-center">
+          <SidebarGroup className="px-4 mt-6 text-center text-sm">
             <p>
               You must login or create a user to access all features of Smask
             </p>

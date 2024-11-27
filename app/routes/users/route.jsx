@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import mongoose from "mongoose";
-import Avatar from "~/components/avatar/Avatar";
+import Avatar from "~/components/_feature/avatar/Avatar";
 import { Badge } from "~/components/ui/badge";
 import {
   Table,
@@ -44,13 +44,12 @@ export async function loader({ request }) {
 
 export default function Users() {
   const { users, userData } = useLoaderData();
-  console.log(users, userData);
 
   return (
     <section>
-      <div className="text-center my-20 flex flex-col gap-2 items-center justify-center">
-        <h1 className="text-5xl font-semibold tracking-tight">All users</h1>
-        <p className="text-lg">A list of all users in your current workspace</p>
+      <div className="text-center my-8 flex flex-col gap-2 items-center justify-center">
+        <h1 className="text-4xl font-semibold tracking-tight">All users</h1>
+        <p className="text-md">A list of all users in your current workspace</p>
 
         {userData.location.name && (
           <div className="flex gap-2 mt-6">
@@ -78,16 +77,26 @@ export default function Users() {
         <TableBody>
           {users.map((user) => (
             <TableRow key={user._id}>
-              <TableCell className="font-medium flex gap-2 items-center">
-                <Avatar name={user.firstName} />
-                {user.firstName} {user.lastName}
-              </TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
-                {new Date(user.createdAt).toLocaleDateString()}
-              </TableCell>
-              <TableCell>Not specified</TableCell>
-              <TableCell>{user.location.name}</TableCell>
+              <Link to={`/user/${user._id}`}>
+                <TableCell className="font-medium flex gap-2 items-center">
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.firstName + " " + user.lastName}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <Avatar name={user.firstName} />
+                  )}
+                  {user.firstName} {user.lastName}
+                </TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>Not specified</TableCell>
+                <TableCell>{user.location.name}</TableCell>
+              </Link>
             </TableRow>
           ))}
         </TableBody>

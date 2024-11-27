@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const { userData } = useLoaderData();
 
   return (
-    <section className="py-8">
+    <section className="p-2 pt-14 lg:p-8 lg:pt-20">
       <Profile userData={userData} />
     </section>
   );

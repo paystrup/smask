@@ -49,20 +49,30 @@ export default function Profile({ userData }) {
           {userData.email}
         </a>
 
-        <div className="flex gap-2 my-6 flex-wrap items-center justify-center">
-          <Badge variant="primary" className="text-sm capitalize">
-            {userData.diet === "none" ? "No diet preference" : userData.diet}
-          </Badge>
-
-          <Badge className="text-sm">
-            Created {new Date(userData.createdAt).toLocaleDateString()}
-          </Badge>
-
-          {userData.birthday && (
-            <Badge className="text-sm">
-              🎉 Birthday in {daysUntilBirthday} days
+        <div className="flex flex-col gap-2 my-6">
+          <div className="flex gap-2 flex-wrap items-center justify-center">
+            <Badge className="text-sm bg-black text-white">
+              Created {new Date(userData.createdAt).toLocaleDateString("en-US")}
             </Badge>
-          )}
+
+            {userData?.location?.name && (
+              <Badge variant="primary" className="text-sm capitalize">
+                {userData.location.name}
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex gap-2 flex-wrap items-center justify-center">
+            <Badge variant="primary" className="text-sm capitalize">
+              {userData.diet === "none" ? "No diet preference" : userData.diet}
+            </Badge>
+
+            {userData.birthday && (
+              <Badge className="text-sm">
+                🎉 Birthday in {daysUntilBirthday} days
+              </Badge>
+            )}
+          </div>
         </div>
 
         {userData.favoriteMeal && (

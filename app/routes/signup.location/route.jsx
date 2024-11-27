@@ -26,7 +26,7 @@ export default function GetSignUpLocation() {
   const actionData = useActionData();
 
   return (
-    <section className="grid grid-cols-12 h-full pt-12 px-2 sm:px-4 lg:px-0 lg:pt-0">
+    <section className="grid grid-cols-12 h-full pt-12 px-4 lg:px-0 lg:pt-0">
       <section className="hidden lg:flex lg:flex-col lg:gap-8 col-span-6 bg-primary-blue h-full p-12 items-center justify-center">
         <h2 className="text-white text-lg tracking-tighter max-w-[40ch] text-center opacity-40">
           What is better than gathering over a great meal? <b>Smask.</b> We help

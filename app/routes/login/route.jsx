@@ -11,7 +11,7 @@ import { sessionStorage } from "~/services/session.server";
 import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 
 export function meta() {
@@ -54,7 +54,7 @@ export default function LoginPage() {
           />
 
           <Card className="max-w-lg w-full pt-6">
-            <CardContent className="text-sm">
+            <CardContent>
               <Form method="post" className="flex flex-col w-full gap-8 mb-2">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1">
@@ -96,15 +96,18 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <Button type="submit">Sign In</Button>
+                <CardFooter className="flex flex-col gap-2 p-0">
+                  <Button className="w-full" type="submit">
+                    Sign In
+                  </Button>
+                  <Link
+                    to="/signup/location"
+                    className="hover:opacity-60 duration-200 transition-all "
+                  >
+                    Don&apos;t have a user? <u>Sign up here</u>
+                  </Link>
+                </CardFooter>
               </Form>
-
-              <Link
-                to="/signup/location"
-                className="hover:opacity-60 duration-200 transition-all "
-              >
-                Don&apos;t have a user? <u>Sign up here</u>
-              </Link>
             </CardContent>
           </Card>
         </div>

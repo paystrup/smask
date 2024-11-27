@@ -97,7 +97,7 @@ export default function Meals() {
   };
 
   return (
-    <section className="mt-8">
+    <section className="mt-12 px-8">
       <div className="flex items-center justify-center text-center flex-col gap-12 bg-white">
         <h1 className="text-5xl font-medium tracking-tighter max-w-[25ch]">
           {title}

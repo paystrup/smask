@@ -77,8 +77,11 @@ export default function Users() {
         <TableBody>
           {users.map((user) => (
             <TableRow key={user._id}>
-              <Link to={`/user/${user._id}`}>
-                <TableCell className="font-medium flex gap-2 items-center">
+              <TableCell>
+                <Link
+                  to={`/user/${user._id}`}
+                  className="font-medium flex gap-2 items-center"
+                >
                   {user.image ? (
                     <img
                       src={user.image}
@@ -89,14 +92,14 @@ export default function Users() {
                     <Avatar name={user.firstName} />
                   )}
                   {user.firstName} {user.lastName}
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>Not specified</TableCell>
-                <TableCell>{user.location.name}</TableCell>
-              </Link>
+                </Link>
+              </TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>
+                {new Date(user.createdAt).toLocaleDateString()}
+              </TableCell>
+              <TableCell>Not specified</TableCell>
+              <TableCell>{user.location.name}</TableCell>
             </TableRow>
           ))}
         </TableBody>

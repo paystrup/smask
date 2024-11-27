@@ -44,7 +44,7 @@ export default function App() {
         <SidebarProvider>
           <AppSidebar />
 
-          <SidebarInset className="p-4 font-sans text-slate-800">
+          <SidebarInset className="font-sans text-slate-800">
             <SidebarTrigger />
             <Outlet />
             <ScrollRestoration />

@@ -65,6 +65,7 @@ export const Diets = {
   NONE: "none",
   VEGAN: "vegan",
   VEGETARIAN: "vegetarian",
+  PESCETARIAN: "pescetarian",
 };
 
 const tagSchema = new mongoose.Schema({
@@ -87,12 +88,14 @@ const userSchema = new Schema(
     firstName: {
       type: String,
       required: true,
-      maxLength: [20, "Firstname must be max. 20 characters long"],
+      maxLength: [30, "Firstname must be max. 20 characters long"],
+      minLength: [3, "Firstname must be at least 3 characters long"],
     },
     lastName: {
       type: String,
       required: true,
       maxLength: [20, "Lastname must be max. 20 characters long"],
+      minLength: [3, "Lastname must be at least 3 characters long"],
     },
     birthday: {
       type: Date,
@@ -110,14 +113,15 @@ const userSchema = new Schema(
       maxLength: [30, "Your email can be max. 30 characters long"],
     },
     favoriteMeal: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Meal",
+      type: String,
       required: false,
+      maxLength: [50, "Favorite meal must be max. 50 characters long"],
     },
     password: {
       type: String,
       required: true,
       select: false, // Exclude pw from query results by default
+      minLength: [8, "Password must be at least 8 characters long"],
     },
     admin: {
       type: Boolean,
@@ -159,30 +163,6 @@ const locationSchema = new Schema(
   },
   { timestamps: true },
 );
-
-// Ingredient Schema
-// const ingredientSchema = new Schema(
-//   {
-//     name: {
-//       type: String,
-//       required: true,
-//       minLength: [2, "Ingredient name is too short"],
-//       maxLength: [50, "Ingredient name is too long"],
-//     },
-//     category: {
-//       type: String,
-//       enum: Object.values(IngredientCategory),
-//       required: true,
-//     },
-//     allergies: [
-//       {
-//         type: String,
-//         enum: Object.values(AllergyType),
-//       },
-//     ],
-//   },
-//   { timestamps: true },
-// );
 
 // Meal Schema
 const mealSchema = new Schema(

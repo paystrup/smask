@@ -1,4 +1,4 @@
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
@@ -59,7 +59,7 @@ const eventsData = {
 };
 export default function CreateMealDays() {
   const { user, mealDays, userMeals } = useLoaderData();
-  console.log(mealDays, userMeals);
+  const actionData = useActionData();
 
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const isCurrentWeek = isSameDay(currentWeek, new Date());
@@ -193,6 +193,8 @@ export default function CreateMealDays() {
                 </Button>
               </Form>
             )}
+
+            {/* Attendees */}
           </div>
         ))}
       </div>
@@ -232,7 +234,7 @@ export const action = async ({ request }) => {
     }
 
     await mealDay.save();
-    return redirect("/profile");
+    return json({ response: mealDay }, { success: true }, { status: 200 });
   } catch (error) {
     console.error(error);
     return json({ error: "Failed to create/update meal day" }, { status: 400 });

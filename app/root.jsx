@@ -13,7 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "./components/ui/sidebar";
-import { AppSidebar } from "./components/ui/AppSidebar";
+import { AppSidebar } from "./components/_feature/Sidebar/AppSidebar";
 
 export const links = () => [
   {
@@ -41,7 +41,6 @@ export default function App() {
       </head>
 
       <body>
-        {/* <Nav /> */}
         <SidebarProvider>
           <AppSidebar />
 

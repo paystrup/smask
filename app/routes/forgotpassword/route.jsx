@@ -6,7 +6,7 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import ErrorMessage from "~/components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import mongoose from "mongoose";
@@ -19,7 +19,6 @@ export function meta() {
 
 export default function ForgotPassword() {
   const actionData = useActionData();
-  console.log(actionData);
 
   if (actionData?.success) {
     return (

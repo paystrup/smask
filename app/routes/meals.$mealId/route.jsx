@@ -7,7 +7,7 @@ import { json } from "@remix-run/node";
 import mongoose from "mongoose";
 import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import { Badge } from "~/components/ui/badge";
-import BackButton from "~/components/navigation/BackButton";
+import BackButton from "~/components/_foundation/navigation/BackButton";
 
 export async function loader({ params }) {
   const meal = await mongoose.models.Meal.findById(params.mealId).populate(

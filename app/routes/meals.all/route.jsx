@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Seasons } from "~/db/models";
-import MealCard from "~/components/cards/MealCard";
+import MealCard from "~/components/_feature/cards/MealCard";
 
 export function meta() {
   return [{ title: "SMASK | All meals" }];

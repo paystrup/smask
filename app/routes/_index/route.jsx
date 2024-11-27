@@ -1,3 +1,5 @@
+import { json } from "@remix-run/node";
+import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 
 export async function loader({ request }) {
@@ -5,8 +7,9 @@ export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
   });
+  const userData = await mongoose.models.User.findById(user._id);
 
-  return user;
+  return json(user, userData);
 }
 
 export default function Index() {

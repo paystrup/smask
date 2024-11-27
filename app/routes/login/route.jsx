@@ -8,7 +8,7 @@ import {
 import { authenticator } from "~/services/auth.server";
 import { json } from "@remix-run/node";
 import { sessionStorage } from "~/services/session.server";
-import ErrorMessage from "~/components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import {

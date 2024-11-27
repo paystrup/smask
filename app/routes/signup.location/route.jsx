@@ -8,7 +8,7 @@ import {
 import { json, redirect } from "@remix-run/node";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import ErrorMessage from "~/components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 

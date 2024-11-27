@@ -216,6 +216,9 @@ export default function CreateMeal() {
               className="mt-4 h-48 w-48 object-cover rounded-lg"
             />
           )}
+          {actionData?.errors?.image && (
+            <p className="mt-1 text-red-500">{actionData.errors.image}</p>
+          )}
 
           {/* Submit button */}
           <button

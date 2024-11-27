@@ -23,7 +23,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "./sidebar";
+} from "../../ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +34,8 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Form, Link, NavLink, useLoaderData } from "@remix-run/react";
-import { Separator } from "./separator";
-import Avatar from "~/components/avatar/Avatar";
+import { Separator } from "../../ui/separator";
+import Avatar from "~/components/_feature/avatar/Avatar";
 
 // Menu items.
 const items = [
@@ -82,7 +82,6 @@ const userItems = [
 
 export function AppSidebar() {
   const user = useLoaderData();
-
   return (
     <Sidebar>
       <SidebarHeader>
@@ -191,7 +190,16 @@ export function AppSidebar() {
                   >
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <div className="flex items-center gap-2">
-                        <Avatar name={user.firstName} />
+                        {user.image ? (
+                          <img
+                            src={user.image}
+                            alt={user.firstName + " " + user.lastName}
+                            className="h-8 w-8 object-cover rounded-full"
+                          />
+                        ) : (
+                          <Avatar name={user.firstName} />
+                        )}
+
                         <p>
                           {user.firstName} {user.lastName}
                         </p>
@@ -200,6 +208,7 @@ export function AppSidebar() {
                     <ChevronsUpDown className="ml-auto size-4" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent
                   className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
                   side="bottom"
@@ -221,15 +230,12 @@ export function AppSidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     {userItems.map((item) => (
-                      <DropdownMenuItem key={item.title}>
-                        <Link
-                          to={item.url}
-                          className="flex items-center gap-2 w-full"
-                        >
+                      <Link to={item.url} key={item.title} className="w-full">
+                        <DropdownMenuItem className="flex items-center gap-2 w-full cursor-pointer">
                           <item.icon />
                           {item.title}
-                        </Link>
-                      </DropdownMenuItem>
+                        </DropdownMenuItem>
+                      </Link>
                     ))}
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />

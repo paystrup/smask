@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import mongoose from "mongoose";
-import ErrorMessage from "~/components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import { Diets } from "~/db/models";
 import {
   Select,

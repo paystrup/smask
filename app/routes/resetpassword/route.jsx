@@ -7,7 +7,7 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import mongoose from "mongoose";
-import ErrorMessage from "~/components/errorhandling/ErrorMessage";
+import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { validateResetToken } from "~/utils/server/handleTokens.server";

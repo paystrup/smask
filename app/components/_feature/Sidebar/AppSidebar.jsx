@@ -40,7 +40,7 @@ import Avatar from "~/components/_feature/avatar/Avatar";
 // Menu items.
 const items = [
   {
-    title: "Dashboard",
+    title: "Overview",
     url: "/",
     icon: LayoutDashboard,
   },
@@ -87,7 +87,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <Link to="/" className="mt-2">
           <svg
-            width="auto"
+            width="100%"
             height="20"
             viewBox="0 0 332 94"
             fill="none"

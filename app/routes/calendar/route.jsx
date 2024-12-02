@@ -1,24 +1,29 @@
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { json, redirect } from "@remix-run/node";
+import { useLoaderData, useSubmit } from "@remix-run/react";
+import { json } from "@remix-run/node";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 import { useState } from "react";
 import {
   addWeeks,
+  addMonths,
   eachDayOfInterval,
   endOfWeek,
+  endOfMonth,
   format,
   getDay,
   getWeek,
   isSameDay,
   isToday,
   startOfWeek,
+  startOfMonth,
 } from "date-fns";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ScrollArea } from "~/components/ui/scroll-area";
+import { ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
 import Avatar from "~/components/_feature/avatar/Avatar";
 import { cn } from "~/lib/utils";
+import { Switch } from "~/components/ui/switch";
+
+const maxAttendeeCount = 10;
 
 export const loader = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {
@@ -52,22 +57,13 @@ export const loader = async ({ request }) => {
 };
 
 export default function CreateMealDays() {
-  const { user, mealDays, userMeals } = useLoaderData();
-  const actionData = useActionData();
-  console.log(mealDays);
+  const { user, mealDays } = useLoaderData();
+  const submit = useSubmit();
 
-  const [currentWeek, setCurrentWeek] = useState(new Date());
-  const isCurrentWeek = isSameDay(currentWeek, new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isMonthView, setIsMonthView] = useState(false);
+  const isCurrentPeriod = isSameDay(currentDate, new Date());
   const hideWeekends = true;
-
-  const weekNumber = getWeek(currentWeek);
-  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
-
-  // Use date-fns to filter out weekends
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd }).filter(
-    (day) => !(hideWeekends && (getDay(day) === 0 || getDay(day) === 6)),
-  );
 
   const mealDaysMap = mealDays.reduce((acc, mealDay) => {
     const formattedDate = format(new Date(mealDay.date), "yyyy-MM-dd");
@@ -75,30 +71,74 @@ export default function CreateMealDays() {
     return acc;
   }, {});
 
-  const navigateWeek = (direction) => {
-    setCurrentWeek((prevWeek) =>
-      addWeeks(prevWeek, direction === "next" ? 1 : -1),
+  const navigatePeriod = (direction) => {
+    setCurrentDate((prevDate) =>
+      isMonthView
+        ? addMonths(prevDate, direction === "next" ? 1 : -1)
+        : addWeeks(prevDate, direction === "next" ? 1 : -1),
     );
   };
 
-  const showCurrentWeek = () => {
-    setCurrentWeek(new Date());
+  const showCurrentPeriod = () => {
+    setCurrentDate(new Date());
+  };
+
+  const toggleView = () => {
+    setIsMonthView((prev) => !prev);
+    setCurrentDate(new Date()); // Reset to current period when toggling
+  };
+
+  const getDaysToRender = () => {
+    if (isMonthView) {
+      const monthStart = startOfMonth(currentDate);
+      const monthEnd = endOfMonth(currentDate);
+      return eachDayOfInterval({ start: monthStart, end: monthEnd });
+    } else {
+      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+      return eachDayOfInterval({ start: weekStart, end: weekEnd }).filter(
+        (day) => !(hideWeekends && (getDay(day) === 0 || getDay(day) === 6)),
+      );
+    }
+  };
+
+  const days = getDaysToRender();
+
+  const handleAttendeeCountChange = (day, userId, currentCount, change) => {
+    const newCount = Math.min(
+      Math.max(0, currentCount + change),
+      maxAttendeeCount,
+    );
+    const formData = new FormData();
+    formData.append("date", day.toISOString());
+    formData.append("userId", userId);
+    formData.append("attendeeCount", newCount.toString());
+    formData.append("action", newCount === 0 ? "remove" : "attend");
+    submit(formData, { method: "post" });
   };
 
   return (
     <section className="flex flex-col w-full h-[100svh]">
-      <div className="w-full flex justify-end min-h-10 mt-4 px-4">
-        {!isCurrentWeek && (
-          <Button className="self-end" onClick={showCurrentWeek}>
-            Go to current week
+      <div className="w-full flex justify-between items-center min-h-10 mt-4 px-4">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="view-toggle"
+            checked={isMonthView}
+            onCheckedChange={toggleView}
+          />
+          <label htmlFor="view-toggle">Month view</label>
+        </div>
+        {!isCurrentPeriod && (
+          <Button className="self-end" onClick={showCurrentPeriod}>
+            Go to current {isMonthView ? "month" : "week"}
           </Button>
         )}
       </div>
 
       <header className="flex items-center justify-between bg-white py-8 px-8">
         <Button
-          onClick={() => navigateWeek("prev")}
-          aria-label="Previous week"
+          onClick={() => navigatePeriod("prev")}
+          aria-label={`Previous ${isMonthView ? "month" : "week"}`}
           variant="outline"
           size="icon"
         >
@@ -107,16 +147,20 @@ export default function CreateMealDays() {
 
         <div className="text-center flex flex-col items-center justify-center ps-8">
           <h2 className="text-2xl lg:text-4xl font-semibold tracking-tight">
-            Week {weekNumber} {isCurrentWeek && "(Current)"}
+            {isMonthView
+              ? format(currentDate, "MMMM yyyy")
+              : `Week ${getWeek(currentDate)} ${isCurrentPeriod ? "(Current)" : ""}`}
           </h2>
           <h3 className="text-md lg:text-lg opacity-60">
-            {format(weekStart, "MMMM d")} - {format(weekEnd, "MMMM d, yyyy")}
+            {isMonthView
+              ? `${format(startOfMonth(currentDate), "MMMM d")} - ${format(endOfMonth(currentDate), "MMMM d, yyyy")}`
+              : `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "MMMM d")} - ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "MMMM d, yyyy")}`}
           </h3>
         </div>
 
         <Button
-          onClick={() => navigateWeek("next")}
-          aria-label="Next week"
+          onClick={() => navigatePeriod("next")}
+          aria-label={`Next ${isMonthView ? "month" : "week"}`}
           variant="outline"
           size="icon"
         >
@@ -125,33 +169,42 @@ export default function CreateMealDays() {
       </header>
 
       <div
-        className={`flex-1 h-full grid grid-cols-1 ${
-          hideWeekends ? "md:grid-cols-5" : "md:grid-cols-7"
-        } overflow-auto`}
+        className={cn(
+          "flex-1 h-full grid overflow-auto",
+          isMonthView
+            ? "grid-cols-7"
+            : hideWeekends
+              ? "grid-cols-1 md:grid-cols-5"
+              : "grid-cols-1 md:grid-cols-7",
+        )}
       >
         {days.map((day, i) => {
           const dayKey = format(day, "yyyy-MM-dd");
           const mealDay = mealDaysMap[dayKey];
           const sliceCount = 5;
-          const isUserAttending = mealDay?.attendees.some(
+          const userAttendance = mealDay?.attendees.find(
             (attendee) => attendee.user.toString() === user._id,
           );
+          const isUserAttending = !!userAttendance;
+          const attendeeCount = userAttendance
+            ? userAttendance.numberOfPeople
+            : 0;
 
           return (
             <div
               key={day.toISOString()}
               className={cn(
-                "group flex relative flex-col justify-between shadow text-center h-full overflow-hidden pb-8 transition-colors duration-500 ease-in-out",
-                i % 2 === 0 ? "bg-gray-50" : "bg-white",
+                "group flex relative flex-col justify-between text-center h-full overflow-hidden pb-8 transition-colors duration-500 ease-in-out",
+                i % 2 === 0
+                  ? "bg-gradient-to-b from-gray-100 to-white"
+                  : "bg-white",
+                isUserAttending && "bg-gradient-to-b from-green-100 to-white",
               )}
             >
-              {/* <div className="hidden opacity-0 group-hover:block group-hover:opacity-100 absolute top-[50%] left-0 z-10 h-full w-full bg-black text-white bg-opacity-20 transition-all duration-500 ease-in-out">
-                <p>Click to attend</p>
-              </div> */}
               <div>
                 <div
                   className={cn(
-                    "p-4  border-b",
+                    "p-4 border-b",
                     isToday(day) ? "bg-blue-50" : "bg-gray-100",
                     isUserAttending && "bg-green-100",
                   )}
@@ -171,92 +224,6 @@ export default function CreateMealDays() {
                     {format(day, "MMMM d")}
                   </p>
                 </div>
-
-                <div>
-                  {mealDay && (
-                    <div className="flex flex-col gap-2 self-end w-full items-center justify-between text-center p-6">
-                      {/* Attendee Title */}
-                      <div className="font-semibold text-sm">
-                        {mealDay?.totalAttendees > 0 ? (
-                          <h3>Attendees ({mealDay.totalAttendees})</h3>
-                        ) : (
-                          <h3 className="font-medium">No attendees</h3>
-                        )}
-                      </div>
-
-                      {/* Attendee Avatars */}
-                      {mealDay.totalAttendees > 0 && (
-                        <ul className="flex flex-wrap items-center justify-center gap-2 p-2 -ms-4 w-full">
-                          {/* Render actual attendees */}
-                          {mealDay.attendeeDetails
-                            .sort((a, b) => {
-                              const firstNameA =
-                                a?.firstName?.toLowerCase() || "";
-                              const firstNameB =
-                                b?.firstName?.toLowerCase() || "";
-                              return firstNameA.localeCompare(firstNameB);
-                            })
-                            .slice(0, sliceCount)
-                            .map((attendee) => (
-                              <li
-                                key={attendee?.user?._id || Math.random()}
-                                className="-me-4"
-                              >
-                                {attendee?.image ? (
-                                  <img
-                                    src={attendee?.image}
-                                    alt={`${attendee?.firstName || "Guest"} ${
-                                      attendee?.lastName || ""
-                                    }`}
-                                    className="h-8 w-8 border rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <Avatar
-                                    className="border"
-                                    name={attendee?.firstName || "?"}
-                                  />
-                                )}
-                              </li>
-                            ))}
-
-                          {/* Add missing avatars if attendeeDetails < totalAttendees */}
-                          {Array.from(
-                            {
-                              length: Math.min(
-                                sliceCount - mealDay.attendeeDetails.length,
-                                mealDay.totalAttendees -
-                                  mealDay.attendeeDetails.length,
-                              ),
-                            },
-                            (_, index) => (
-                              <li
-                                key={`placeholder-${index}`}
-                                className="-me-4"
-                              >
-                                <Avatar name="?" />
-                              </li>
-                            ),
-                          )}
-
-                          {/* Show "+x more" if totalAttendees > 5 */}
-                          {mealDay.totalAttendees > sliceCount && (
-                            <li className="flex items-center justify-center h-8 w-8 bg-primary-blue text-white text-xs font-bold rounded-full">
-                              +{mealDay.totalAttendees - sliceCount}
-                            </li>
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {!mealDay && (
-                  <div className="flex flex-col gap-2 self-end w-fullborder-b">
-                    <div className="p-4 text-sm font-medium text-gray-400">
-                      <h3>No attendees</h3>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="flex flex-col items-center justify-center mt-8 h-full">
@@ -272,49 +239,138 @@ export default function CreateMealDays() {
               </div>
 
               <div>
-                {user && (
-                  <Form method="post" className="p-4 w-full self-end">
-                    <input
-                      type="hidden"
-                      name="date"
-                      value={day.toISOString()}
-                    />
-                    <input type="hidden" name="userId" value={user._id} />
-                    {isUserAttending ? (
-                      // Render Remove Button if the user is already attending
-                      <Button
-                        type="submit"
-                        name="action"
-                        value="remove"
-                        className="mt-2 w-full"
-                        variant="destructive"
-                      >
-                        Remove Attendance
-                      </Button>
-                    ) : (
-                      // Render Attend Button otherwise
-                      <>
-                        <input
-                          type="number"
-                          name="attendeeCount"
-                          defaultValue={1}
-                          className="border rounded p-2 w-full"
-                          min={1}
-                          max={10}
-                        />
-                        <Button
-                          type="submit"
-                          name="action"
-                          value="attend"
-                          className="mt-2 w-full"
-                        >
-                          Attend
-                        </Button>
-                      </>
+                {!mealDay && (
+                  <div className="flex flex-col gap-2 self-end w-full border-b">
+                    <div className="p-4 text-sm font-medium text-gray-400">
+                      <h3>No attendees</h3>
+                    </div>
+                  </div>
+                )}
+
+                {mealDay && (
+                  <div className="flex flex-col gap-2 self-end w-full items-center justify-between text-center p-6">
+                    <div className="font-semibold text-sm">
+                      {mealDay?.totalAttendees > 0 ? (
+                        <h3>Attendees ({mealDay.totalAttendees})</h3>
+                      ) : (
+                        <h3 className="font-medium text-gray-400">
+                          No attendees
+                        </h3>
+                      )}
+                    </div>
+
+                    {mealDay.totalAttendees > 0 && (
+                      <ul className="flex flex-wrap items-center justify-center gap-2 p-2 -ms-4 w-full">
+                        {mealDay.attendeeDetails
+                          .sort((a, b) => {
+                            const firstNameA =
+                              a?.firstName?.toLowerCase() || "";
+                            const firstNameB =
+                              b?.firstName?.toLowerCase() || "";
+                            return firstNameA.localeCompare(firstNameB);
+                          })
+                          .slice(0, sliceCount)
+                          .map((attendee) => (
+                            <li
+                              key={attendee?.user?._id || Math.random()}
+                              className="-me-4"
+                            >
+                              {attendee?.image ? (
+                                <img
+                                  src={attendee?.image}
+                                  alt={`${attendee?.firstName || "Guest"} ${
+                                    attendee?.lastName || ""
+                                  }`}
+                                  className="h-8 w-8 border rounded-full object-cover"
+                                />
+                              ) : (
+                                <Avatar
+                                  className="border"
+                                  name={attendee?.firstName || "?"}
+                                />
+                              )}
+                            </li>
+                          ))}
+
+                        {Array.from(
+                          {
+                            length: Math.min(
+                              sliceCount - mealDay.attendeeDetails.length,
+                              mealDay.totalAttendees -
+                                mealDay.attendeeDetails.length,
+                            ),
+                          },
+                          (_, index) => (
+                            <li key={`placeholder-${index}`} className="-me-4">
+                              <Avatar name="?" />
+                            </li>
+                          ),
+                        )}
+
+                        {mealDay.totalAttendees > sliceCount && (
+                          <li className="flex items-center justify-center h-8 w-8 bg-primary-blue text-white text-xs font-bold rounded-full">
+                            +{mealDay.totalAttendees - sliceCount}
+                          </li>
+                        )}
+                      </ul>
                     )}
-                  </Form>
+                  </div>
                 )}
               </div>
+
+              {user && !isMonthView && (
+                <div className="p-4 w-full self-end">
+                  {isUserAttending ? (
+                    <div className="flex items-center justify-center space-x-4">
+                      <Button
+                        type="button"
+                        className="rounded-full"
+                        onClick={() =>
+                          handleAttendeeCountChange(
+                            day,
+                            user._id,
+                            attendeeCount,
+                            -1,
+                          )
+                        }
+                        variant="outline"
+                        size="icon"
+                      >
+                        <Minus className="h-2 w-2" />
+                      </Button>
+                      <span className="text-md font-semibold">
+                        {attendeeCount}
+                      </span>
+                      <Button
+                        type="button"
+                        className="rounded-full"
+                        onClick={() =>
+                          handleAttendeeCountChange(
+                            day,
+                            user._id,
+                            attendeeCount,
+                            1,
+                          )
+                        }
+                        variant="outline"
+                        size="icon"
+                      >
+                        <Plus className="h-2 w-2" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        handleAttendeeCountChange(day, user._id, 0, 1)
+                      }
+                      className="w-full"
+                    >
+                      Attend
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -327,42 +383,47 @@ export const action = async ({ request }) => {
   const form = await request.formData();
   const userId = form.get("userId");
   const date = new Date(form.get("date"));
-  const actionType = form.get("action"); // Check for attend or remove action
+  const actionType = form.get("action");
+  const attendeeCount = Math.min(
+    parseInt(form.get("attendeeCount")),
+    maxAttendeeCount,
+  );
 
   try {
-    const mealDay = await mongoose.models.Mealday.findOne({ date });
+    let mealDay = await mongoose.models.Mealday.findOne({ date });
+
+    if (!mealDay && actionType === "attend") {
+      mealDay = await mongoose.models.Mealday.create({
+        date,
+        meals: [],
+        attendees: [],
+      });
+    }
 
     if (mealDay) {
-      if (actionType === "remove") {
-        // Remove the user from the attendees list
-        mealDay.attendees = mealDay.attendees.filter(
-          (a) => a.user.toString() !== userId,
-        );
+      const existingAttendeeIndex = mealDay.attendees.findIndex(
+        (a) => a.user.toString() === userId,
+      );
+
+      if (actionType === "remove" || attendeeCount === 0) {
+        if (existingAttendeeIndex !== -1) {
+          mealDay.attendees.splice(existingAttendeeIndex, 1);
+        }
       } else if (actionType === "attend") {
-        // Add or update attendance
-        const attendeeCount = parseInt(form.get("attendeeCount"));
-        const existingAttendee = mealDay.attendees.find(
-          (a) => a.user.toString() === userId,
-        );
-        if (existingAttendee) {
-          existingAttendee.numberOfPeople = attendeeCount;
+        if (existingAttendeeIndex !== -1) {
+          mealDay.attendees[existingAttendeeIndex].numberOfPeople = Math.min(
+            attendeeCount,
+            maxAttendeeCount,
+          );
         } else {
           mealDay.attendees.push({
             user: userId,
-            numberOfPeople: attendeeCount,
+            numberOfPeople: Math.min(attendeeCount, maxAttendeeCount),
           });
         }
       }
+
       await mealDay.save();
-    } else if (actionType === "attend") {
-      // Create a new MealDay if not found and the action is "attend"
-      await mongoose.models.Mealday.create({
-        date,
-        meals: [],
-        attendees: [
-          { user: userId, numberOfPeople: parseInt(form.get("attendeeCount")) },
-        ],
-      });
     }
 
     return json({ success: true });

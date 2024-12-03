@@ -39,6 +39,7 @@ export async function loader({ request }) {
 export default function LoginPage() {
   const loaderData = useLoaderData();
   const navigation = useNavigation();
+  const isSubmitting = navigation.formAction === "/login";
 
   return (
     <section className="grid grid-cols-12 h-full pt-12 px-4 lg:px-0 lg:pt-0">
@@ -100,11 +101,11 @@ export default function LoginPage() {
                 )}
 
                 <CardFooter className="flex flex-col gap-2 p-0">
-                  {navigation.state === "submitting" ? (
+                  {isSubmitting ? (
                     <LoadingButton />
                   ) : (
                     <Button
-                      disabled={navigation.state === "submitting"}
+                      disabled={isSubmitting}
                       className="w-full"
                       type="submit"
                     >

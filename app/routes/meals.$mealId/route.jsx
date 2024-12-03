@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import { Badge } from "~/components/ui/badge";
 import BackButton from "~/components/_foundation/navigation/BackButton";
+import Ribbon from "~/components/_foundation/Ribbon";
 
 export async function loader({ params }) {
   const meal = await mongoose.models.Meal.findById(params.mealId).populate(
@@ -26,7 +27,7 @@ export default function BookPage() {
   const tagsToDisplay = 10;
 
   return (
-    <section className="mt-12">
+    <Ribbon>
       <BackButton />
       <ContentWrapper>
         <div className="gap-8 grid grid-cols-12">
@@ -42,12 +43,12 @@ export default function BookPage() {
             </div>
           )}
 
-          <div className="col-span-6 flex flex-col gap-8">
+          <div className="col-span-12 lg:col-span-6 flex flex-col gap-8">
             <div>
               <p className="mb-6 text-sm">
                 Created {new Date(meal.createdAt).toLocaleDateString()}
               </p>
-              <h1 className="mb-4 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5">
+              <h1 className="mb-4 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5 break-words">
                 {meal.title}
               </h1>
               <p className="text-2xl opacity-70">{meal.description}</p>
@@ -102,7 +103,7 @@ export default function BookPage() {
           </div>
         </div>
       </ContentWrapper>
-    </section>
+    </Ribbon>
   );
 }
 

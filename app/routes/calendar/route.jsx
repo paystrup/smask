@@ -119,20 +119,20 @@ export default function CreateMealDays() {
 
   return (
     <section className="flex flex-col w-full h-[100svh]">
-      <div className="w-full flex justify-between items-center min-h-10 mt-4 px-4">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="view-toggle"
-            checked={isMonthView}
-            onCheckedChange={toggleView}
-          />
-          <label htmlFor="view-toggle">Month view</label>
-        </div>
+      <div className="w-full flex justify-end items-center min-h-10 mt-4 px-4 ps-20 gap-2">
         {!isCurrentPeriod && (
           <Button className="self-end" onClick={showCurrentPeriod}>
             Go to current {isMonthView ? "month" : "week"}
           </Button>
         )}
+
+        <Button
+          variant="outline"
+          onClick={toggleView}
+          aria-label={isMonthView ? "View week" : "View month"}
+        >
+          View {isMonthView ? "week" : "month"}
+        </Button>
       </div>
 
       <header className="flex items-center justify-between bg-white py-8 px-8">

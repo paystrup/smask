@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { addDays } from "date-fns";
+import { addDays, format } from "date-fns";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Attendees from "../calendar/Attendees";
@@ -42,6 +42,7 @@ export function DailyAttendanceCard({
   const veganCount = dietCounts.vegan || null;
   const vegetarianCount = dietCounts.vegetarian || null;
   const pescetarianCount = dietCounts.pescetarian || null;
+  const dateString = format(displayDate, "EEE, MMM d");
 
   return (
     <Card
@@ -52,16 +53,25 @@ export function DailyAttendanceCard({
     >
       <CardTitle className="flex flex-col gap-2 justify-between z-[2]">
         <div className="flex justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
+          <div className="flex flex-col">
             <h3 className="text-2xl font-semibold tracking-tighter">
               Daily attendance
             </h3>
+            <p
+              className={cn(
+                "text-lg opacity-50 font-normal",
+                isUserAttending && "opacity-80",
+              )}
+            >
+              {dateString}
+            </p>
           </div>
-          <Attendees mealDay={relevantMealday} />
+          <div>
+            <Attendees mealDay={relevantMealday} className="-me-8" />
+          </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex mt-4 gap-2 flex-wrap">
           {/* <p className="text-lg opacity-80 font-normal">{dateString}</p> */}
           {veganCount && (
             <Badge variant="default" className="w-fit">
@@ -81,16 +91,15 @@ export function DailyAttendanceCard({
         </div>
       </CardTitle>
 
-      <CardContent className="flex justify-between items-end mt-8 p-0 z-[4]">
-        <div className="flex gap-2 items-end justify-between">
-          <h3 className="text-8xl tracking-tighter font-medium">
-            {attendance}
-          </h3>
-        </div>
+      <div className="flex w-full items-center justify-center gap-2">
+        <h3 className="text-9xl tracking-tighter font-medium">{attendance}</h3>
+      </div>
 
+      <CardContent className="flex flex-col mt-8 p-0 z-[4]">
         <Button
           onClick={onSubmit}
           className={cn(
+            "mt-8",
             isUserAttending ? "bg-red-500" : "bg-green-500 hover:bg-green-600",
           )}
           variant={isUserAttending ? "destructive" : "default"}

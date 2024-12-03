@@ -42,15 +42,14 @@ export async function loader({ request }) {
     },
   ]);
 
-  return json({ user, userData, mealDays, allUsersInWorkspace });
+  return json({ userData, mealDays, allUsersInWorkspace });
 }
 
 export default function Index() {
   const { mealDays, userData, allUsersInWorkspace } = useLoaderData();
   const submit = useSubmit();
   const navigation = useNavigation();
-  const isSubmitting =
-    navigation.state === "submitting" || navigation.state === "loading";
+  const isSubmitting = navigation.formAction === "/?index";
   const today = new Date();
 
   const todayFormatted = new Date().toLocaleDateString("en-US", {

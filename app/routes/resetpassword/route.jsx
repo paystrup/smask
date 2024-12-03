@@ -4,10 +4,12 @@ import {
   isRouteErrorResponse,
   Link,
   useLoaderData,
+  useNavigation,
   useRouteError,
 } from "@remix-run/react";
 import mongoose from "mongoose";
 import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
+import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { validateResetToken } from "~/utils/server/handleTokens.server";
@@ -48,6 +50,7 @@ export async function loader({ request }) {
 
 export default function ResetPassword() {
   const data = useLoaderData();
+  const navigation = useNavigation();
 
   return (
     <section className="flex flex-col items-center">
@@ -80,7 +83,6 @@ export default function ResetPassword() {
               <label htmlFor="password">New Password:</label>
               <Input id="password" type="password" name="password" required />
             </div>
-
             <div>
               <label htmlFor="confirmPassword">Confirm Password:</label>
               <Input
@@ -90,10 +92,13 @@ export default function ResetPassword() {
                 required
               />
             </div>
-
-            <Button className="w-full mt-2" type="submit">
-              Reset Password
-            </Button>
+            {navigation.state === "submitting" ? (
+              <LoadingButton />
+            ) : (
+              <Button className="w-full mt-2" type="submit">
+                Reset Password
+              </Button>
+            )}
           </Form>
         )}
       </div>

@@ -3,6 +3,7 @@ import {
   Link,
   isRouteErrorResponse,
   useActionData,
+  useNavigation,
   useRouteError,
 } from "@remix-run/react";
 import { json } from "@remix-run/node";
@@ -12,6 +13,7 @@ import { Button } from "~/components/ui/button";
 import mongoose from "mongoose";
 import { generateResetToken } from "~/utils/server/handleTokens.server";
 import { sendResetLink } from "~/utils/server/nodeMailer.server";
+import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 
 export function meta() {
   return [{ title: "smask | Forgot Password" }];
@@ -19,6 +21,7 @@ export function meta() {
 
 export default function ForgotPassword() {
   const actionData = useActionData();
+  const navigation = useNavigation();
 
   if (actionData?.success) {
     return (
@@ -73,8 +76,11 @@ export default function ForgotPassword() {
               <p>{actionData?.fieldErrors?.email}</p>
             </div>
           )}
-
-          <Button type="submit">Reset password</Button>
+          {navigation.state === "submitting" ? (
+            <LoadingButton />
+          ) : (
+            <Button type="submit">Reset password</Button>
+          )}
         </Form>
 
         <Link

@@ -3,6 +3,7 @@ import {
   Link,
   isRouteErrorResponse,
   useLoaderData,
+  useNavigation,
   useRouteError,
 } from "@remix-run/react";
 import { authenticator } from "~/services/auth.server";
@@ -13,6 +14,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
+import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 
 export function meta() {
   return [{ title: "smask | Login" }];
@@ -36,6 +38,8 @@ export async function loader({ request }) {
 
 export default function LoginPage() {
   const loaderData = useLoaderData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.formAction === "/login";
 
   return (
     <section className="grid grid-cols-12 h-full pt-12 px-4 lg:px-0 lg:pt-0">
@@ -97,9 +101,18 @@ export default function LoginPage() {
                 )}
 
                 <CardFooter className="flex flex-col gap-2 p-0">
-                  <Button className="w-full" type="submit">
-                    Sign In
-                  </Button>
+                  {isSubmitting ? (
+                    <LoadingButton />
+                  ) : (
+                    <Button
+                      disabled={isSubmitting}
+                      className="w-full"
+                      type="submit"
+                    >
+                      Sign In
+                    </Button>
+                  )}
+
                   <Link
                     to="/signup/location"
                     className="hover:opacity-60 duration-200 transition-all "

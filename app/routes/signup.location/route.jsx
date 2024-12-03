@@ -4,6 +4,7 @@ import {
   useActionData,
   useRouteError,
   isRouteErrorResponse,
+  useNavigation,
 } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import { Input } from "~/components/ui/input";
@@ -13,6 +14,7 @@ import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
+import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 
 export async function loader({ request }) {
   await authenticator.isAuthenticated(request, {
@@ -24,6 +26,7 @@ export async function loader({ request }) {
 
 export default function GetSignUpLocation() {
   const actionData = useActionData();
+  const navigation = useNavigation();
 
   return (
     <section className="grid grid-cols-12 h-full pt-12 px-4 lg:px-0 lg:pt-0">
@@ -62,9 +65,13 @@ export default function GetSignUpLocation() {
               </CardContent>
 
               <CardFooter className="flex flex-col gap-2">
-                <Button className="w-full" type="submit">
-                  Continue
-                </Button>
+                {navigation.state === "submitting" ? (
+                  <LoadingButton />
+                ) : (
+                  <Button className="w-full" type="submit">
+                    Continue
+                  </Button>
+                )}
 
                 <Link to="/login" className="hover:opacity-60 transition-all">
                   Already have an account? <u>Go to login.</u>

@@ -22,7 +22,7 @@ export async function loader({ params }) {
   return json(meal);
 }
 
-export default function BookPage() {
+export default function MealDetailPage() {
   const meal = useLoaderData();
   const tagsToDisplay = 10;
 
@@ -35,7 +35,7 @@ export default function BookPage() {
             <img
               src={meal?.image}
               alt={meal?.title}
-              className="w-full h-[50vh] object-cover rounded-2xl col-span-6"
+              className="w-full h-[50vh] object-cover rounded-2xl col-span-12 lg:col-span-6"
             />
           ) : (
             <div className="flex items-center justify-center text-3xl bg-slate-50 w-full h-[50vh] object-cover rounded-2xl col-span-6">
@@ -45,61 +45,75 @@ export default function BookPage() {
 
           <div className="col-span-12 lg:col-span-6 flex flex-col gap-8">
             <div>
-              <p className="mb-6 text-sm">
-                Created {new Date(meal.createdAt).toLocaleDateString()}
-              </p>
-              <h1 className="mb-4 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5 break-words">
+              <h1 className="mb-6 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5 break-words">
                 {meal.title}
               </h1>
-              <p className="text-2xl opacity-70">{meal.description}</p>
+              <Badge className="bg-gray-200 text-black mb-12 text-sm tracking-tight">
+                Created {new Date(meal.createdAt).toLocaleDateString()}
+              </Badge>
+              <p className="text-xl tracking-tight opacity-70">
+                {meal.description}
+              </p>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <h3>Seasons</h3>
-              <ul className="flex flex-wrap gap-2">
-                {meal.seasons.length > 0 && (
-                  <>
-                    {meal.seasons.slice(0, tagsToDisplay).map((season, i) => (
-                      <li key={season + i} className="list-none">
-                        <Badge>{season}</Badge>
-                      </li>
-                    ))}
-                  </>
-                )}
-              </ul>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3>Allergies</h3>
-              <ul className="flex flex-wrap gap-2">
-                {meal.allergies.length > 0 && (
-                  <>
-                    {meal.allergies
-                      .slice(0, tagsToDisplay)
-                      .map((allergy, i) => (
-                        <li key={allergy + i} className="list-none">
-                          <Badge>{allergy}</Badge>
+            {meal.seasons.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h3 className="font-medium tracking-tight text-lg">Seasons</h3>
+                <ul className="flex flex-wrap gap-2">
+                  {meal.seasons.length > 0 && (
+                    <>
+                      {meal.seasons.slice(0, tagsToDisplay).map((season, i) => (
+                        <li key={season + i} className="list-none">
+                          <Badge className="bg-black text-white">
+                            {season}
+                          </Badge>
                         </li>
                       ))}
-                  </>
-                )}
-              </ul>
-            </div>
+                    </>
+                  )}
+                </ul>
+              </div>
+            )}
 
-            <div className="flex flex-col gap-2">
-              <h3>Tags</h3>
-              <ul className="flex flex-wrap gap-2">
-                {meal.tags.length > 0 && (
-                  <>
-                    {meal.tags.slice(0, tagsToDisplay).map((tag, i) => (
-                      <li key={tag + i} className="list-none">
-                        <Badge>{tag.name}</Badge>
-                      </li>
-                    ))}
-                  </>
-                )}
-              </ul>
-            </div>
+            {meal.allergies.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h3 className="font-medium tracking-tight text-lg">
+                  Allergies
+                </h3>
+                <ul className="flex flex-wrap gap-2">
+                  {meal.allergies.length > 0 && (
+                    <>
+                      {meal.allergies
+                        .slice(0, tagsToDisplay)
+                        .map((allergy, i) => (
+                          <li key={allergy + i} className="list-none">
+                            <Badge className="bg-primary-blue text-white">
+                              {allergy}
+                            </Badge>
+                          </li>
+                        ))}
+                    </>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {meal.tags.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h3 className="font-medium tracking-tight text-lg">Tags</h3>
+                <ul className="flex flex-wrap gap-2">
+                  {meal.tags.length > 0 && (
+                    <>
+                      {meal.tags.slice(0, tagsToDisplay).map((tag, i) => (
+                        <li key={tag + i} className="list-none">
+                          <Badge variant="outline">{tag.name}</Badge>
+                        </li>
+                      ))}
+                    </>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </ContentWrapper>

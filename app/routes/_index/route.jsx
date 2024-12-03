@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
-import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { DailyAttendanceCard } from "./DailyAttendanceCard";
 import WeeklyAttendance from "./WeeklyAttendance";
@@ -48,6 +48,9 @@ export async function loader({ request }) {
 export default function Index() {
   const { mealDays, userData, allUsersInWorkspace } = useLoaderData();
   const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubmitting =
+    navigation.state === "submitting" || navigation.state === "loading";
   const today = new Date();
 
   const todayFormatted = new Date().toLocaleDateString("en-US", {
@@ -125,6 +128,7 @@ export default function Index() {
           <DailyAttendanceCard
             mealDays={mealDays}
             isUserAttending={isUserAttending}
+            isSubmitting={isSubmitting}
             onSubmit={() =>
               handleAttendeeCountChange(
                 relevantMealday.date,

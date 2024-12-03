@@ -5,6 +5,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   useLoaderData,
+  useNavigation,
 } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ import { authenticator } from "~/services/auth.server";
 import Stepper from "~/components/_feature/Stepper/Stepper";
 import { Card, CardFooter } from "~/components/ui/card";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
+import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 
 export async function loader({ params, request }) {
   await authenticator.isAuthenticated(request, {
@@ -60,6 +62,7 @@ export async function loader({ params, request }) {
 }
 
 export default function SignUpPage() {
+  const navigation = useNavigation();
   const locationId = useLoaderData();
   const actionData = useActionData();
   const [step, setStep] = useState(1);
@@ -384,7 +387,12 @@ export default function SignUpPage() {
               )}
 
               <div className="flex flex-col gap-2 -mb-4">
-                {step === 3 && <Button type="submit">Sign Up</Button>}
+                {step === 3 &&
+                  (navigation.state === "submitting" ? (
+                    <LoadingButton />
+                  ) : (
+                    <Button type="submit">Sign Up</Button>
+                  ))}
               </div>
             </Form>
 

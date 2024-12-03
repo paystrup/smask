@@ -6,8 +6,14 @@ import Attendees from "../calendar/Attendees";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
+import { Loader2 } from "lucide-react";
 
-export function DailyAttendanceCard({ mealDays, onSubmit, isUserAttending }) {
+export function DailyAttendanceCard({
+  mealDays,
+  onSubmit,
+  isUserAttending,
+  isSubmitting,
+}) {
   const today = new Date();
   const dayOfWeek = today.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -25,25 +31,17 @@ export function DailyAttendanceCard({ mealDays, onSubmit, isUserAttending }) {
   const attendance = relevantMealday ? relevantMealday.totalAttendees : 0;
   // const dateString = format(displayDate, "EEE, MMM d");
 
-  const veganCount =
-    relevantMealday.attendeeDetails.filter(
-      (attendee) => attendee.diet === "vegan",
-    ).length > 0
-      ? relevantMealday.attendeeDetails.filter(
-          (attendee) => attendee.diet === "vegan",
-        ).length
-      : null;
+  const dietCounts = relevantMealday.attendeeDetails.reduce(
+    (counts, attendee) => {
+      counts[attendee.diet] = (counts[attendee.diet] || 0) + 1;
+      return counts;
+    },
+    {},
+  );
 
-  const vegetarianCount =
-    relevantMealday.attendeeDetails.filter(
-      (attendee) => attendee.diet === "vegetarian",
-    ).length > 0
-      ? relevantMealday.attendeeDetails.filter(
-          (attendee) => attendee.diet === "vegetarian",
-        ).length
-      : null;
-
-  console.log(veganCount);
+  const veganCount = dietCounts.vegan || null;
+  const vegetarianCount = dietCounts.vegetarian || null;
+  const pescetarianCount = dietCounts.pescetarian || null;
 
   return (
     <Card
@@ -72,7 +70,12 @@ export function DailyAttendanceCard({ mealDays, onSubmit, isUserAttending }) {
           )}
           {vegetarianCount && (
             <Badge variant="default" className="w-fit">
-              {veganCount} Vegetarian
+              {vegetarianCount} Vegetarian
+            </Badge>
+          )}
+          {pescetarianCount && (
+            <Badge variant="default" className="w-fit">
+              {pescetarianCount} Pescetarian
             </Badge>
           )}
         </div>
@@ -91,7 +94,9 @@ export function DailyAttendanceCard({ mealDays, onSubmit, isUserAttending }) {
             isUserAttending ? "bg-red-500" : "bg-green-500 hover:bg-green-600",
           )}
           variant={isUserAttending ? "destructive" : "default"}
+          disabled={isSubmitting}
         >
+          {isSubmitting && <Loader2 className="animate-spin" />}
           {isUserAttending ? "Don't go" : "Attend"}
         </Button>
       </CardContent>

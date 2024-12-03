@@ -97,8 +97,8 @@ export default function Meals() {
   };
 
   return (
-    <section className="mt-12 px-8">
-      <div className="flex items-center justify-center text-center flex-col gap-12 bg-white">
+    <section className="mt-16 px-8">
+      <div className="flex items-center justify-center text-center flex-col gap-12 bg-white mb-10">
         <h1 className="text-5xl font-medium tracking-tighter max-w-[25ch]">
           {title}
         </h1>
@@ -127,7 +127,7 @@ export default function Meals() {
         </Form>
 
         <div className="flex justify-between gap-4 items-center">
-          <h2 className="text-2xl font-bold tracking-tight w-full">
+          <h2 className="text-2xl font-semibold tracking-tight w-full">
             {queryFallback}
           </h2>
 

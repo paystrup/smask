@@ -38,6 +38,7 @@
     "cmdk": "^1.0.0",
     "command": "^0.0.5",
     "date-fns": "^3.6.0",
+    "embla-carousel-react": "^8.5.1",
     "isbot": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.453.0",

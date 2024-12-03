@@ -9,21 +9,47 @@ import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import { Badge } from "~/components/ui/badge";
 import BackButton from "~/components/_foundation/navigation/BackButton";
 import Ribbon from "~/components/_foundation/Ribbon";
+import { MealCarousel } from "~/components/_feature/Carousel/MealCarousel";
 
 export async function loader({ params }) {
-  const meal = await mongoose.models.Meal.findById(params.mealId).populate(
-    "tags",
-  );
+  const meal = await mongoose.models.Meal.findById(params.mealId)
+    .populate("tags")
+    .exec();
+
   if (!meal) {
     throw new Response(`Couldn't find meal with id ${params.mealId}`, {
       status: 404,
     });
   }
-  return json(meal);
+
+  const relatedMealsQuery = {
+    $or: [
+      { tags: { $in: meal.tags.map((tag) => tag._id) } },
+      { seasons: { $in: meal.seasons } },
+      { allergies: { $in: meal.allergies } },
+    ],
+    _id: { $ne: meal._id }, // Exclude the current meal
+  };
+
+  let relatedMeals = await mongoose.models.Meal.find(relatedMealsQuery)
+    .limit(6)
+    .exec();
+
+  // Fallback to random meals if not enough related meals are found
+  if (relatedMeals.length < 6) {
+    const remainingCount = 6 - relatedMeals.length;
+    const randomMeals = await mongoose.models.Meal.aggregate([
+      { $match: { _id: { $ne: meal._id } } },
+      { $sample: { size: remainingCount } },
+    ]);
+    relatedMeals = relatedMeals.concat(randomMeals);
+  }
+
+  return json({ meal, relatedMeals });
 }
 
 export default function MealDetailPage() {
-  const meal = useLoaderData();
+  const { meal, relatedMeals } = useLoaderData();
   const tagsToDisplay = 10;
 
   return (
@@ -38,7 +64,7 @@ export default function MealDetailPage() {
               className="w-full h-[50vh] object-cover rounded-2xl col-span-12 lg:col-span-6"
             />
           ) : (
-            <div className="flex items-center justify-center text-3xl bg-slate-50 w-full h-[50vh] object-cover rounded-2xl col-span-6">
+            <div className="flex items-center justify-center text-3xl bg-slate-50 w-full h-[50vh] object-cover rounded-2xl col-span-12 lg:col-span-6">
               <p>🍔</p>
             </div>
           )}
@@ -63,7 +89,7 @@ export default function MealDetailPage() {
                   {meal.seasons.length > 0 && (
                     <>
                       {meal.seasons.slice(0, tagsToDisplay).map((season, i) => (
-                        <li key={season + i} className="list-none">
+                        <li key={i} className="list-none">
                           <Badge className="bg-black text-white">
                             {season}
                           </Badge>
@@ -86,7 +112,7 @@ export default function MealDetailPage() {
                       {meal.allergies
                         .slice(0, tagsToDisplay)
                         .map((allergy, i) => (
-                          <li key={allergy + i} className="list-none">
+                          <li key={i} className="list-none">
                             <Badge className="bg-primary-blue text-white">
                               {allergy}
                             </Badge>
@@ -105,7 +131,7 @@ export default function MealDetailPage() {
                   {meal.tags.length > 0 && (
                     <>
                       {meal.tags.slice(0, tagsToDisplay).map((tag, i) => (
-                        <li key={tag + i} className="list-none">
+                        <li key={i} className="list-none">
                           <Badge variant="outline">{tag.name}</Badge>
                         </li>
                       ))}
@@ -116,6 +142,13 @@ export default function MealDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Related Meals */}
+        {relatedMeals && (
+          <div>
+            <MealCarousel cards={relatedMeals} />
+          </div>
+        )}
       </ContentWrapper>
     </Ribbon>
   );

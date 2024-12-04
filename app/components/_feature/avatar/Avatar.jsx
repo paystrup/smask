@@ -1,6 +1,5 @@
 import { cn } from "~/lib/utils";
 
-/* eslint-disable react/prop-types */
 export default function Avatar({ name, className }) {
   return (
     <div

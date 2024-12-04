@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import MealCard from "../cards/MealCard";

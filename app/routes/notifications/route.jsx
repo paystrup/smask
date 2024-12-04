@@ -1,5 +1,8 @@
 import { json } from "@remix-run/node";
 import mongoose from "mongoose";
+import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
+import ContentWrapper from "~/components/_foundation/ContentWrapper";
+import Ribbon from "~/components/_foundation/Ribbon";
 import { authenticator } from "~/services/auth.server";
 
 export async function loader({ request }) {
@@ -11,5 +14,16 @@ export async function loader({ request }) {
 }
 
 export default function notifications() {
-  return <div>notifications</div>;
+  return (
+    <Ribbon>
+      <ContentWrapper>
+        <div className="flex items-center justify-center w-full">
+          <SimpleHeader
+            title="Notifications will be coming soon..."
+            description="Stay tuned for more feature updates coming 🔔"
+          />
+        </div>
+      </ContentWrapper>
+    </Ribbon>
+  );
 }

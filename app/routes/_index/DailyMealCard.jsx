@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { addDays, format } from "date-fns";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";

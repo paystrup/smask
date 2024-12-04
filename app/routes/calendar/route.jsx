@@ -21,7 +21,6 @@ import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
 import Avatar from "~/components/_feature/avatar/Avatar";
 import { cn } from "~/lib/utils";
-import { Switch } from "~/components/ui/switch";
 
 const maxAttendeeCount = 10;
 

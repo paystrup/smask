@@ -18,15 +18,15 @@ export default function MealCard({
     return (
       <Link to={link} className="w-full h-fit">
         <div className="flex gap-4">
-          <div className="relative">
+          <div className="relative aspect-square min-w-32 min-h-32 max-h-32 max-w-32">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={title}
-                className="h-32 w-32 object-cover rounded-2xl"
+                className="h-full w-full object-cover rounded-2xl"
               />
             ) : (
-              <div className="flex items-center justify-center text-5xl bg-neutral-50 h-32 w-32 object-cover rounded-2xl">
+              <div className="flex items-center justify-center text-5xl bg-neutral-50 h-full w-full object-cover rounded-2xl">
                 <p>🍔</p>
               </div>
             )}
@@ -37,12 +37,12 @@ export default function MealCard({
               <h3 className="text-2xl font-semibold first-letter:capitalize">
                 {title}
               </h3>
-              <p className="opacity-70 first-letter:capitalize line-clamp-1 max-w-[50ch]">
+              <p className="opacity-70 first-letter:capitalize line-clamp-3 mt-2 max-w-[50ch]">
                 {description}
               </p>
             </div>
 
-            <ul className="flex flex-wrap gap-2">
+            <ul className="flex flex-wrap gap-2 mt-8 lg:mt-0">
               {seasons.length > 0 && (
                 <>
                   {seasons.map((season) => (

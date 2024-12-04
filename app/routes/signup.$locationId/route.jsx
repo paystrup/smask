@@ -28,6 +28,7 @@ import Stepper from "~/components/_feature/Stepper/Stepper";
 import { Card, CardFooter } from "~/components/ui/card";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 import LoadingButton from "~/components/_foundation/pending/LoadingButton";
+import backgroundImage from "~/assets/img/signup-background.jpg";
 
 export async function loader({ params, request }) {
   await authenticator.isAuthenticated(request, {
@@ -154,11 +155,18 @@ export default function SignUpPage() {
 
   return (
     <section className="grid grid-cols-12 h-full pt-12 px-4 lg:px-0 lg:pt-0">
-      <section className="hidden lg:flex lg:flex-col lg:gap-8 col-span-6 bg-primary-blue h-full p-12 items-center justify-center">
-        <h2 className="text-white text-lg tracking-tighter max-w-[40ch] text-center opacity-40">
-          What is better than gathering over a great meal? <b>Smask.</b> We help
-          you doing just that - but with ease.
-        </h2>
+      <section className="hidden lg:flex lg:flex-col lg:gap-8 col-span-6 h-full p-12 items-center justify-center relative bg-black">
+        <img
+          src={backgroundImage}
+          alt="Smask food background"
+          className="absolute inset-0 object-cover w-full h-full z-0"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-transparent opacity-90 z-0" />
+        <div className="relative z-10 text-center">
+          <h2 className="text-white text-2xl tracking-tighter max-w-[40ch] opacity-40">
+            Smask. The easy way to organize your lunch. Smask. Smask. Smask.
+          </h2>
+        </div>
       </section>
 
       <section className="flex flex-col items-center lg:px-8 2xl:px-0 col-span-12 lg:col-span-6 lg:h-full">

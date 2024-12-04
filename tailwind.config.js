@@ -28,6 +28,18 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      screens: {
+        contentWrapperXL: "1920px",
+      },
+      animation: {
+        fade: "fadeIn .5s ease-in-out",
+      },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

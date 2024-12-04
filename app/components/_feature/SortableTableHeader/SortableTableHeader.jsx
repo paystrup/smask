@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { TableHead } from "~/components/ui/table";

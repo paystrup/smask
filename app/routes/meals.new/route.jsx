@@ -76,194 +76,200 @@ export default function CreateMeal() {
 
   return (
     <Ribbon>
-      <div className="flex flex-col items-center justify-center max-w-full overflow-hidden">
-        <SimpleHeader
-          title="Add a new meal"
-          description="Create a new meal and add it to your Smask library"
-        />
+      <ContentWrapper>
+        <div className="flex flex-col items-center justify-center max-w-full overflow-hidden">
+          <SimpleHeader
+            title="Add a new meal"
+            description="Create a new meal and add it to your Smask library"
+          />
 
-        <Card className="max-w-3xl pt-6">
-          <CardContent>
-            <Form
-              method="post"
-              encType="multipart/form-data"
-              className="flex flex-col gap-2"
-            >
-              <fieldset className="flex flex-col gap-4">
-                <div>
-                  {/* Title Input */}
-                  <label htmlFor="title" className="mb-1 block">
-                    Title
-                  </label>
-                  <Input
-                    type="text"
-                    name="title"
-                    id="title"
-                    placeholder="Title"
-                    defaultValue={""}
-                    className={`border ${
-                      actionData?.errors?.title ? "border-red-500" : ""
-                    }`}
-                  />
-                  {actionData?.errors?.title && (
-                    <p className="mt-1 text-red-500">
-                      {actionData.errors.title}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  {/* Description Input */}
-                  <label htmlFor="description" className="mb-1 block">
-                    Description
-                  </label>
-                  <Textarea
-                    name="description"
-                    id="description"
-                    placeholder="Description"
-                    defaultValue={""}
-                    className={`border ${
-                      actionData?.errors?.description ? "border-red-500" : ""
-                    }`}
-                  />
-                  {actionData?.errors?.description && (
-                    <p className="mt-1 text-red-500">
-                      {actionData.errors.description}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  {/* Tags Input */}
-                  <label htmlFor="tags" className="mb-1 block">
-                    Tags (comma-separated)
-                  </label>
-                  <Input
-                    type="text"
-                    name="tags"
-                    id="tags"
-                    placeholder="e.g. spicy,vegan"
-                    defaultValue={""}
-                    className={`border ${
-                      actionData?.errors?.tags ? "border-red-500" : ""
-                    }`}
-                  />
-                  {actionData?.errors?.tags && (
-                    <p className="mt-1 text-red-500">
-                      {actionData.errors.tags}
-                    </p>
-                  )}
-                </div>
-              </fieldset>
-
-              {/* Allergy Badges */}
-              <fieldset className="mt-8">
-                <legend className="mb-2 block">Allergies</legend>
-                <div className="flex flex-wrap gap-2">
-                  {allergyOptions.map((allergy) => (
-                    <Badge
-                      key={allergy.value}
-                      variant={
-                        selectedAllergies.includes(allergy.value)
-                          ? "default"
-                          : "outline"
-                      }
-                      className="cursor-pointer w-fit"
-                      onClick={() => handleAllergyToggle(allergy.value)}
-                    >
-                      <Input
-                        type="checkbox"
-                        name="allergies"
-                        value={allergy.value}
-                        checked={selectedAllergies.includes(allergy.value)}
-                        onChange={() => {}}
-                        className="sr-only w-fit"
-                      />
-                      {allergy.label}
-                      {selectedAllergies.includes(allergy.value) && (
-                        <X className="ml-1 h-3 w-3" />
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-              </fieldset>
-              {actionData?.errors?.allergies && (
-                <p className="mt-1 text-red-500">
-                  {actionData.errors.allergies}
-                </p>
-              )}
-
-              {/* Season Badges */}
-              <fieldset className="mt-8">
-                <legend className="mb-2 block">Seasons</legend>
-                <div className="flex flex-wrap gap-2">
-                  {seasonOptions.map((season) => (
-                    <Badge
-                      key={season.value}
-                      variant={
-                        selectedSeasons.includes(season.value)
-                          ? "default"
-                          : "outline"
-                      }
-                      className="cursor-pointer w-fit"
-                      onClick={() => handleSeasonToggle(season.value)}
-                    >
-                      <Input
-                        type="checkbox"
-                        name="seasons"
-                        value={season.value}
-                        checked={selectedSeasons.includes(season.value)}
-                        onChange={() => {}}
-                        className="sr-only w-fit"
-                      />
-                      {season.label}
-                      {selectedSeasons.includes(season.value) && (
-                        <X className="ml-1 h-3 w-3" />
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-              </fieldset>
-              {actionData?.errors?.seasons && (
-                <p className="mt-1 text-red-500">{actionData.errors.seasons}</p>
-              )}
-
-              <div className="mt-6 flex flex-col gap-2">
-                {/* Image Upload */}
-                <label htmlFor="image" className="mb-1 block">
-                  Upload Image
-                </label>
-                <Input
-                  type="file"
-                  name="image"
-                  id="image"
-                  onChange={handleImageChange}
-                />
-                <div className="flex w-full items-center justify-center">
-                  {image && (
-                    <img
-                      src={image}
-                      alt="Selected"
-                      className="mt-4 h-48 w-48 object-cover rounded-lg"
-                    />
-                  )}
-                </div>
-                {actionData?.errors?.image && (
-                  <p className="mt-1 text-red-500">{actionData.errors.image}</p>
-                )}
-              </div>
-
-              {/* Submit button */}
-              <button
-                type="submit"
-                className="mt-3 rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700"
+          <Card className="max-w-3xl pt-6">
+            <CardContent>
+              <Form
+                method="post"
+                encType="multipart/form-data"
+                className="flex flex-col gap-2"
               >
-                Save
-              </button>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+                <fieldset className="flex flex-col gap-4">
+                  <div>
+                    {/* Title Input */}
+                    <label htmlFor="title" className="mb-1 block">
+                      Title
+                    </label>
+                    <Input
+                      type="text"
+                      name="title"
+                      id="title"
+                      placeholder="Title"
+                      defaultValue={""}
+                      className={`border ${
+                        actionData?.errors?.title ? "border-red-500" : ""
+                      }`}
+                    />
+                    {actionData?.errors?.title && (
+                      <p className="mt-1 text-red-500">
+                        {actionData.errors.title}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    {/* Description Input */}
+                    <label htmlFor="description" className="mb-1 block">
+                      Description
+                    </label>
+                    <Textarea
+                      name="description"
+                      id="description"
+                      placeholder="Description"
+                      defaultValue={""}
+                      className={`border ${
+                        actionData?.errors?.description ? "border-red-500" : ""
+                      }`}
+                    />
+                    {actionData?.errors?.description && (
+                      <p className="mt-1 text-red-500">
+                        {actionData.errors.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    {/* Tags Input */}
+                    <label htmlFor="tags" className="mb-1 block">
+                      Tags (comma-separated)
+                    </label>
+                    <Input
+                      type="text"
+                      name="tags"
+                      id="tags"
+                      placeholder="e.g. spicy,vegan"
+                      defaultValue={""}
+                      className={`border ${
+                        actionData?.errors?.tags ? "border-red-500" : ""
+                      }`}
+                    />
+                    {actionData?.errors?.tags && (
+                      <p className="mt-1 text-red-500">
+                        {actionData.errors.tags}
+                      </p>
+                    )}
+                  </div>
+                </fieldset>
+
+                {/* Allergy Badges */}
+                <fieldset className="mt-8">
+                  <legend className="mb-2 block">Allergies</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {allergyOptions.map((allergy) => (
+                      <Badge
+                        key={allergy.value}
+                        variant={
+                          selectedAllergies.includes(allergy.value)
+                            ? "default"
+                            : "outline"
+                        }
+                        className="cursor-pointer w-fit"
+                        onClick={() => handleAllergyToggle(allergy.value)}
+                      >
+                        <Input
+                          type="checkbox"
+                          name="allergies"
+                          value={allergy.value}
+                          checked={selectedAllergies.includes(allergy.value)}
+                          onChange={() => {}}
+                          className="sr-only w-fit"
+                        />
+                        {allergy.label}
+                        {selectedAllergies.includes(allergy.value) && (
+                          <X className="ml-1 h-3 w-3" />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                </fieldset>
+                {actionData?.errors?.allergies && (
+                  <p className="mt-1 text-red-500">
+                    {actionData.errors.allergies}
+                  </p>
+                )}
+
+                {/* Season Badges */}
+                <fieldset className="mt-8">
+                  <legend className="mb-2 block">Seasons</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {seasonOptions.map((season) => (
+                      <Badge
+                        key={season.value}
+                        variant={
+                          selectedSeasons.includes(season.value)
+                            ? "default"
+                            : "outline"
+                        }
+                        className="cursor-pointer w-fit"
+                        onClick={() => handleSeasonToggle(season.value)}
+                      >
+                        <Input
+                          type="checkbox"
+                          name="seasons"
+                          value={season.value}
+                          checked={selectedSeasons.includes(season.value)}
+                          onChange={() => {}}
+                          className="sr-only w-fit"
+                        />
+                        {season.label}
+                        {selectedSeasons.includes(season.value) && (
+                          <X className="ml-1 h-3 w-3" />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                </fieldset>
+                {actionData?.errors?.seasons && (
+                  <p className="mt-1 text-red-500">
+                    {actionData.errors.seasons}
+                  </p>
+                )}
+
+                <div className="mt-6 flex flex-col gap-2">
+                  {/* Image Upload */}
+                  <label htmlFor="image" className="mb-1 block">
+                    Upload Image
+                  </label>
+                  <Input
+                    type="file"
+                    name="image"
+                    id="image"
+                    onChange={handleImageChange}
+                  />
+                  <div className="flex w-full items-center justify-center">
+                    {image && (
+                      <img
+                        src={image}
+                        alt="Selected"
+                        className="mt-4 h-48 w-48 object-cover rounded-lg"
+                      />
+                    )}
+                  </div>
+                  {actionData?.errors?.image && (
+                    <p className="mt-1 text-red-500">
+                      {actionData.errors.image}
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  className="mt-3 rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
+      </ContentWrapper>
     </Ribbon>
   );
 }

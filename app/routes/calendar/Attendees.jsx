@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 // Display attendees list with avatars
 // Slice added and a plus is displayed if there are more attendees
 // Attendees are sorted by first name

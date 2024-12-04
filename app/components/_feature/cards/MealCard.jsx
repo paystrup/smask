@@ -2,7 +2,6 @@ import { Link } from "@remix-run/react";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 
-/* eslint-disable react/prop-types */
 export default function MealCard({
   title,
   description,

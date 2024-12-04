@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { endOfWeek, format, startOfWeek } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import {

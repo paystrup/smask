@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { addYears, differenceInDays } from "date-fns";
 import { Badge } from "~/components/ui/badge";
 import Avatar from "../_feature/avatar/Avatar";

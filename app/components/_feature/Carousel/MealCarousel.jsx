@@ -41,9 +41,9 @@ export function MealCarousel({ cards, title }) {
   }
 
   return (
-    <div className="w-full mx-auto">
+    <div className="w-full mx-auto mt-10 lg:mt-20">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-2xl font-semibold tracking-tight mt-20 mb-4">
+        <h3 className="text-2xl font-semibold tracking-tight">
           {title || "Related Meals"}
         </h3>
         <div className="flex gap-2">

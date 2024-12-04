@@ -126,7 +126,7 @@ export default function Meals() {
           </button>
         </Form>
 
-        <div className="flex justify-between gap-4 items-center">
+        <div className="flex flex-col lg:flex-row justify-between gap-4 lg:items-center">
           <h2 className="text-2xl font-semibold tracking-tight w-full">
             {queryFallback}
           </h2>
@@ -172,7 +172,7 @@ export default function Meals() {
           </div>
         </div>
 
-        <div className="flex mt-6 w-full justify-end items-end">
+        <div className="hidden lg:flex mt-6 w-full justify-end items-end">
           {/* <Form method="get" action="/meals/all">
             <Button type="submit" hidden>
               Clear

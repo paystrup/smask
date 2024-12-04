@@ -2,6 +2,7 @@ import {
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
+  Form,
 } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import mongoose from "mongoose";
@@ -10,8 +11,25 @@ import { Badge } from "~/components/ui/badge";
 import BackButton from "~/components/_foundation/navigation/BackButton";
 import Ribbon from "~/components/_foundation/Ribbon";
 import { MealCarousel } from "~/components/_feature/Carousel/MealCarousel";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
+import { authenticator } from "~/services/auth.server";
 
-export async function loader({ params }) {
+export async function loader({ request, params }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: `/`,
+  });
+
   const meal = await mongoose.models.Meal.findById(params.mealId)
     .populate("tags")
     .exec();
@@ -45,16 +63,47 @@ export async function loader({ params }) {
     relatedMeals = relatedMeals.concat(randomMeals);
   }
 
-  return json({ meal, relatedMeals });
+  return json({ meal, relatedMeals, user });
 }
 
+export const meta = ({ data }) => {
+  return [{ title: `SMASK | ${data?.meal?.title || "Meal"}` }];
+};
+
 export default function MealDetailPage() {
-  const { meal, relatedMeals } = useLoaderData();
+  const { meal, relatedMeals, user } = useLoaderData();
+  const [open, setOpen] = useState(false);
   const tagsToDisplay = 10;
 
   return (
     <Ribbon>
-      <BackButton />
+      <div className="flex justify-between items-center mb-12">
+        <BackButton />
+
+        {user.admin && (
+          <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger>
+              <Button variant="destructive">Delete</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent aria-label="Permanently delete your account">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  meal from our database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Form action="destroy" method="post" className="w-full">
+                  <Button variant="destructive">Delete</Button>
+                </Form>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
+
       <ContentWrapper>
         <div className="gap-8 grid grid-cols-12">
           {meal?.image ? (
@@ -71,15 +120,21 @@ export default function MealDetailPage() {
 
           <div className="col-span-12 lg:col-span-6 flex flex-col gap-8">
             <div>
-              <h1 className="mb-6 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5 break-words">
-                {meal.title}
-              </h1>
+              {meal?.title && (
+                <h1 className="mb-6 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5 break-words">
+                  {meal?.title}
+                </h1>
+              )}
+
               <Badge className="bg-gray-200 text-black mb-12 text-sm tracking-tight">
                 Created {new Date(meal.createdAt).toLocaleDateString()}
               </Badge>
-              <p className="text-xl tracking-tight opacity-70">
-                {meal.description}
-              </p>
+
+              {meal?.description && (
+                <p className="text-xl tracking-tight opacity-70">
+                  {meal?.description}
+                </p>
+              )}
             </div>
 
             {meal.seasons.length > 0 && (

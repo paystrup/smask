@@ -32,7 +32,7 @@ export default function MealCard({
             )}
           </div>
 
-          <div className="flex justify-between w-full">
+          <div className="flex flex-col lg:flex-row justify-between w-full">
             <div>
               <h3 className="text-2xl font-semibold first-letter:capitalize">
                 {title}

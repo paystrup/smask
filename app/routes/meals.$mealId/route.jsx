@@ -63,7 +63,12 @@ export async function loader({ request, params }) {
     relatedMeals = relatedMeals.concat(randomMeals);
   }
 
-  return json({ meal, relatedMeals, user });
+  // Use a Set to remove duplicates by `_id`
+  const uniqueMeals = Array.from(
+    new Map(relatedMeals.map((meal) => [meal._id.toString(), meal])),
+  ).map(([, meal]) => meal);
+
+  return json({ meal, relatedMeals: uniqueMeals, user });
 }
 
 export const meta = ({ data }) => {

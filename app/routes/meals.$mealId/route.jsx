@@ -3,12 +3,14 @@ import {
   useRouteError,
   isRouteErrorResponse,
   Form,
+  Outlet,
+  Link,
+  useActionData,
 } from "@remix-run/react";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import mongoose from "mongoose";
 import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import { Badge } from "~/components/ui/badge";
-import BackButton from "~/components/_foundation/navigation/BackButton";
 import Ribbon from "~/components/_foundation/Ribbon";
 import { MealCarousel } from "~/components/_feature/Carousel/MealCarousel";
 import { useState } from "react";
@@ -24,6 +26,10 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { authenticator } from "~/services/auth.server";
+import { MoveLeft, Pen, Trash } from "lucide-react";
+import { uploadImage } from "~/utils/server/uploadImage.server";
+import { Dialog, DialogTrigger } from "~/components/ui/dialog";
+import EditMeal from "./EditMeal";
 
 export async function loader({ request, params }) {
   const user = await authenticator.isAuthenticated(request, {
@@ -76,36 +82,63 @@ export const meta = ({ data }) => {
 };
 
 export default function MealDetailPage() {
+  const actionData = useActionData();
   const { meal, relatedMeals, user } = useLoaderData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const tagsToDisplay = 10;
 
   return (
     <Ribbon>
       <div className="flex justify-between items-center mb-12">
-        <BackButton />
+        <Link className="flex gap-2 mb-8" to="/meals/all">
+          <MoveLeft size={24} />
+          <p>Go back</p>
+        </Link>
 
         {user.admin && (
-          <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger>
-              <Button variant="destructive">Delete</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent aria-label="Permanently delete your account">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  meal from our database.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Form action="destroy" method="post" className="w-full">
-                  <Button variant="destructive">Delete</Button>
-                </Form>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="flex gap-2">
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+              <DialogTrigger>
+                <Button className="min-w-28 flex items-center justify-center gap-2">
+                  <Pen className="h-4 w-4" />
+                  Edit
+                </Button>
+              </DialogTrigger>
+              <EditMeal
+                meal={meal}
+                actionData={actionData}
+                onSubmit={() => setEditOpen(false)}
+              />
+            </Dialog>
+
+            <AlertDialog open={open} onOpenChange={setOpen}>
+              <AlertDialogTrigger>
+                <Button
+                  variant="destructive"
+                  className="min-w-28 flex items-center justify-center gap-2"
+                >
+                  <Trash className="h-4 w-4" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent aria-label="Permanently delete your account">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    the meal from our database.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Form action="destroy" method="post" className="w-full">
+                    <Button variant="destructive">Delete</Button>
+                  </Form>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         )}
       </div>
 
@@ -209,9 +242,97 @@ export default function MealDetailPage() {
             <MealCarousel cards={relatedMeals} />
           </div>
         )}
+
+        <Outlet />
       </ContentWrapper>
     </Ribbon>
   );
+}
+
+export async function action({ request, params }) {
+  const form = await request.formData();
+  const { title, description, tags, actionType } = Object.fromEntries(form);
+
+  const allergies = form.getAll("allergies");
+  const seasons = form.getAll("seasons");
+
+  const tagArray = tags
+    ? tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    : [];
+
+  const tagIds = await Promise.all(
+    tagArray.map(async (tagName) => {
+      let tag = await mongoose.models.Tag.findOne({ name: tagName });
+      if (!tag) {
+        tag = new mongoose.models.Tag({ name: tagName });
+        await tag.save();
+      }
+      return tag._id;
+    }),
+  );
+
+  const image = form.get("image");
+  let imageUrl = null;
+  if (image && image.size > 0) {
+    imageUrl = await uploadImage(image);
+  }
+
+  try {
+    let updatedMeal;
+    let existingMeal;
+
+    if (actionType === "saveAsNew") {
+      // Fetch the existing meal to get its image if no new image is uploaded
+      existingMeal = await mongoose.models.Meal.findById(params.mealId);
+    }
+
+    const mealData = {
+      title: title,
+      description: description,
+      allergies: allergies,
+      seasons: seasons,
+      tags: tagIds,
+      image: imageUrl || (existingMeal ? existingMeal.image : null),
+    };
+
+    if (actionType === "saveAsNew") {
+      // Create a new meal
+      updatedMeal = new mongoose.models.Meal(mealData);
+      await updatedMeal.save();
+    } else {
+      // Update existing meal
+      updatedMeal = await mongoose.models.Meal.findByIdAndUpdate(
+        params.mealId,
+        mealData,
+        { new: true, runValidators: true },
+      );
+
+      if (!updatedMeal) {
+        throw new Error("Meal not found");
+      }
+    }
+
+    return redirect(`/meals/${updatedMeal._id}`);
+  } catch (error) {
+    console.error(error);
+    const errors = {};
+    if (error.name === "ValidationError") {
+      Object.keys(error.errors).forEach((key) => {
+        errors[key] = error.errors[key].message;
+      });
+    } else if (error.message === "Meal not found") {
+      errors.general = "Meal not found";
+    } else {
+      errors.general = "An unexpected error occurred";
+    }
+    return json(
+      { errors: errors, values: Object.fromEntries(form) },
+      { status: 400 },
+    );
+  }
 }
 
 export function ErrorBoundary() {

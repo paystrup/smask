@@ -15,6 +15,7 @@ import {
 } from "~/components/ui/select";
 import { Seasons } from "~/db/models";
 import MealCard from "~/components/_feature/cards/MealCard";
+import { cn } from "~/lib/utils";
 
 export function meta() {
   return [{ title: "SMASK | All meals" }];
@@ -210,7 +211,10 @@ export default function Meals() {
               return (
                 <li
                   key={meal._id}
-                  className={`${view === "list" ? "col-span-12 hover:opacity-80 transition-opacity duration-300 ease-in-out" : "col-span-12 xl:col-span-6 2xl:col-span-3 hover:opacity-80 transition-opacity duration-300 ease-in-out"}`}
+                  className={cn(
+                    "animate-fade col-span-12 hover:opacity-80 hover:transition-opacity duration-500 hover:ease-in-out",
+                    view === "list" ? "" : "xl:col-span-6 2xl:col-span-3",
+                  )}
                 >
                   <MealCard
                     link={`/meals/${meal._id}`}
@@ -227,7 +231,7 @@ export default function Meals() {
             })}
           </ul>
         ) : (
-          <h3 className="text-center text-3xl tracking-tight mt-20">
+          <h3 className="text-center text-3xl tracking-tight mt-20 animate-fade">
             {noResultsText}
           </h3>
         )}

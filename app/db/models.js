@@ -215,6 +215,14 @@ const mealSchema = new Schema(
   { timestamps: true },
 );
 
+const guestSchema = new Schema({
+  diet: {
+    type: String,
+    enum: Object.values(Diets),
+    default: undefined,
+  },
+});
+
 const mealDaySchema = new Schema(
   {
     date: {
@@ -254,10 +262,12 @@ const mealDaySchema = new Schema(
           ref: "User",
           required: true,
         },
-        numberOfPeople: {
-          type: Number,
-          default: 1, // Default to 1 person
-        },
+        guests: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Guest",
+          },
+        ],
       },
     ],
   },
@@ -289,11 +299,6 @@ export const models = [
     schema: userSchema,
     collection: "users",
   },
-  // {
-  //   name: "Ingredient",
-  //   schema: ingredientSchema,
-  //   collection: "ingredients",
-  // },
   {
     name: "Tag",
     schema: tagSchema,
@@ -313,5 +318,10 @@ export const models = [
     name: "Location",
     schema: locationSchema,
     collection: "locations",
+  },
+  {
+    name: "Guest",
+    schema: guestSchema,
+    collection: "guests",
   },
 ];

@@ -55,11 +55,9 @@ export default function EditMeal({ actionData, meal, onSubmit }) {
   };
 
   return (
-    <DialogContent>
-      <DialogTitle>
-        <h2 className="text-2xl font-semibold tracking-tight mb-6 text-center">
-          Edit meal
-        </h2>
+    <DialogContent className="lg:max-w-screen-lg overflow-y-scroll max-h-screen py-12">
+      <DialogTitle className="text-2xl font-semibold tracking-tight mb-6 text-center">
+        Edit meal
       </DialogTitle>
       <Form
         method="post"

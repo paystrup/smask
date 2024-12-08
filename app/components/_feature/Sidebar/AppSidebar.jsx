@@ -1,5 +1,6 @@
 import {
   Bell,
+  BellRing,
   Calendar,
   ChevronsUpDown,
   LayoutDashboard,
@@ -7,6 +8,7 @@ import {
   LogOut,
   PlusCircle,
   Settings,
+  Sparkle,
   Sparkles,
   User,
   Users,
@@ -48,6 +50,34 @@ const items = [
     title: "Calendar",
     url: "/calendar",
     icon: Calendar,
+  },
+  {
+    title: "Suggestions",
+    url: "/suggestions",
+    icon: Sparkle,
+  },
+];
+
+const adminItems = [
+  {
+    title: "Overview",
+    url: "/",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
+  },
+  {
+    title: "Suggestions",
+    url: "/suggestions",
+    icon: Sparkle,
+  },
+  {
+    title: "Announcements",
+    url: "/announcements",
+    icon: BellRing,
   },
   {
     title: "All Meals",
@@ -124,23 +154,47 @@ export function AppSidebar() {
               <SidebarGroupLabel>Application</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                        <NavLink
-                          to={item.url}
-                          style={({ isActive }) => {
-                            return {
-                              fontWeight: isActive ? "bold" : "",
-                            };
-                          }}
-                        >
-                          <item.icon />
-                          <p>{item.title}</p>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {user.admin ? (
+                    <>
+                      {adminItems.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild>
+                            <NavLink
+                              to={item.url}
+                              style={({ isActive }) => {
+                                return {
+                                  fontWeight: isActive ? "bold" : "",
+                                };
+                              }}
+                            >
+                              <item.icon />
+                              <p>{item.title}</p>
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {items.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild>
+                            <NavLink
+                              to={item.url}
+                              style={({ isActive }) => {
+                                return {
+                                  fontWeight: isActive ? "bold" : "",
+                                };
+                              }}
+                            >
+                              <item.icon />
+                              <p>{item.title}</p>
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

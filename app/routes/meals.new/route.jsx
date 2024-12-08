@@ -319,7 +319,7 @@ export async function action({ request }) {
       allergies: allergies,
       seasons: seasons,
       tags: tagIds, // Store tag ObjectIds in the Meal
-      image: imageUrl || null,
+      image: imageUrl || undefined,
     });
     await newMeal.save();
     return redirect(`/meals/${newMeal._id}`);

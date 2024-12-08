@@ -1,54 +1,61 @@
-import { endOfWeek, format, startOfWeek } from "date-fns";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { useState } from "react";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  XAxis,
-} from "recharts";
+  addDays,
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
+import { TrendingDown, TrendingUp } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "~/components/ui/chart";
+import { Button } from "~/components/ui/button";
 
-export default function WeeklyAttendance({ mealDays }) {
+export default function AttendanceChart({ mealDays }) {
+  const [view, setView] = useState("week");
   const today = new Date();
   const hideWeekends = true;
 
-  // Helper to get the current week's days
-  const getWeekDays = (hideWeekends = true) => {
-    let startOfWeekDate = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const today = new Date();
-    const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+  // Helper to get the current week's or month's days
+  const getDays = (isMonth = false, hideWeekends = true) => {
+    const startDate = isMonth
+      ? startOfMonth(today)
+      : startOfWeek(today, { weekStartsOn: 1 });
+    const endDate = isMonth
+      ? endOfMonth(today)
+      : endOfWeek(today, { weekStartsOn: 1 });
+    const daysToShow = isMonth
+      ? endDate.getDate() - startDate.getDate() + 1
+      : hideWeekends
+        ? 5
+        : 7;
 
-    if (isWeekend) {
-      startOfWeekDate = startOfWeek(
-        new Date(today.setDate(today.getDate() + 1)),
-        { weekStartsOn: 1 },
-      );
-    }
-
-    const daysToShow = hideWeekends ? 5 : 7;
-
-    return Array.from({ length: daysToShow }).map((_, index) => {
-      const day = new Date(startOfWeekDate);
-      day.setDate(day.getDate() + index);
-      return {
-        date: day.toISOString().split("T")[0],
-        dayLabel: day.toLocaleString("en-US", { weekday: "short" }),
-      };
-    });
+    return Array.from({ length: daysToShow })
+      .map((_, index) => {
+        const day = addDays(startDate, index);
+        if (!isMonth && hideWeekends && [0, 6].includes(day.getDay())) {
+          return null;
+        }
+        return {
+          date: format(day, "yyyy-MM-dd"),
+          dayLabel: isMonth ? format(day, "d") : format(day, "EEE"),
+        };
+      })
+      .filter(Boolean);
   };
 
-  const weekDays = getWeekDays(hideWeekends);
+  const days = getDays(view === "month", hideWeekends);
 
-  // Map mealDays to current week
-  const chartData = weekDays.map(({ date, dayLabel }) => {
+  // Map mealDays to current week/month
+  const chartData = days.map(({ date, dayLabel }) => {
     const mealDay = mealDays.find(
-      (meal) => new Date(meal.date).toISOString().split("T")[0] === date,
+      (meal) => format(new Date(meal.date), "yyyy-MM-dd") === date,
     );
     return {
       day: dayLabel,
@@ -56,21 +63,18 @@ export default function WeeklyAttendance({ mealDays }) {
     };
   });
 
-  // Calculate total attendees for current and previous weeks
-  const currentWeekTotal = chartData.reduce(
-    (sum, day) => sum + day.attendees,
-    0,
+  // Calculate total attendees for current and previous periods
+  const currentTotal = chartData.reduce((sum, day) => sum + day.attendees, 0);
+
+  // Get previous period's data
+  const previousDays = getDays(view === "month", hideWeekends).map(
+    ({ date }) => {
+      const previousDate = addDays(new Date(date), view === "month" ? -30 : -7);
+      return format(previousDate, "yyyy-MM-dd");
+    },
   );
 
-  // Get previous week's data
-  const previousWeekDays = getWeekDays(hideWeekends).map(({ date }) => {
-    const previousDate = new Date(
-      new Date(date).setDate(new Date(date).getDate() - 7),
-    );
-    return previousDate.toISOString().split("T")[0];
-  });
-
-  const previousWeekTotal = previousWeekDays.reduce((sum, date) => {
+  const previousTotal = previousDays.reduce((sum, date) => {
     const mealDay = mealDays.find(
       (meal) => new Date(meal.date).toISOString().split("T")[0] === date,
     );
@@ -78,7 +82,7 @@ export default function WeeklyAttendance({ mealDays }) {
   }, 0);
 
   // Calculate the difference
-  const difference = currentWeekTotal - previousWeekTotal;
+  const difference = currentTotal - previousTotal;
 
   // Determine the icon and color
   const isPositive = difference > 0;
@@ -90,29 +94,45 @@ export default function WeeklyAttendance({ mealDays }) {
   const trendColor = isPositive ? "text-green-500" : "text-red-500";
 
   return (
-    <Card className="w-full h-full border-0 bg-slate-100 text-black">
-      <CardContent className="pt-6 flex flex-col justify-between h-full">
+    <Card className="w-full h-full border-0 bg-neutral-200/50 text-black">
+      <CardContent className="pt-6 flex flex-col justify-between h-full gap-2">
         <div className="flex items-start justify-between">
           <CardTitle className="mb-16 space-y-1">
             <h3 className="text-2xl font-semibold tracking-tighter">
-              Weekly Attendance
+              {view === "week" ? "Weekly" : "Monthly"} Attendance
             </h3>
             <p className="text-lg opacity-80 font-normal">
-              {format(startOfWeek(today, { weekStartsOn: 1 }), "MMM d")} -{" "}
-              {format(endOfWeek(today, { weekStartsOn: 1 }), "MMM d")}
+              {format(days[0].date, "MMM d")} -{" "}
+              {format(days[days.length - 1].date, "MMM d")}
             </p>
           </CardTitle>
-          <div className="flex items-center gap-4 justify-end">
-            <p className="opacity-60 text-lg tracking-tighter text-black">
-              Since last week
-            </p>
+          <div className="flex flex-col items-center gap-6 justify-between h-full">
+            <div className="flex gap-2 justify-end w-full">
+              <Button
+                variant={view === "week" ? "default" : "outline"}
+                onClick={() => setView("week")}
+              >
+                Week
+              </Button>
+              <Button
+                variant={view === "month" ? "default" : "outline"}
+                onClick={() => setView("month")}
+              >
+                Month
+              </Button>
+            </div>
 
-            <div className="flex gap-1">
-              {trendIcon}
-              <span className={`font-base ${trendColor}`}>
-                {isPositive ? "+" : ""}
-                {difference}{" "}
-              </span>
+            <div className="flex gap-2 items-center justify-end">
+              <p className="opacity-60 text-base tracking-tighter text-black">
+                Since last {view}
+              </p>
+              <div className="flex gap-1">
+                {trendIcon}
+                <span className={`font-base ${trendColor}`}>
+                  {isPositive ? "+" : ""}
+                  {difference}{" "}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -125,34 +145,32 @@ export default function WeeklyAttendance({ mealDays }) {
             },
           }}
         >
-          <ResponsiveContainer>
-            <BarChart
-              accessibilityLayer
-              data={chartData}
-              barGap={2}
-              barCategoryGap={0}
-            >
-              <CartesianGrid
-                vertical={false}
-                color="#22222"
-                strokeDasharray="3 3"
-              />
-              <XAxis
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                dataKey="day"
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar
-                dataKey="attendees"
-                radius={10}
-                width={10}
-                fill="#0e3cf6"
-                barSize={40}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            barGap={2}
+            barCategoryGap={0}
+          >
+            <CartesianGrid
+              vertical={false}
+              color="#22222"
+              strokeDasharray="3 3"
+            />
+            <XAxis
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              dataKey="day"
+            />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar
+              dataKey="attendees"
+              radius={10}
+              width={10}
+              fill="#0e3cf6"
+              barSize={view === "week" ? 40 : 20}
+            />
+          </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>

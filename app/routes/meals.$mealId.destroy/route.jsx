@@ -15,17 +15,30 @@ export async function action({ request, params }) {
     failureRedirect: "/",
   });
 
-  // Check if the user is an admin
+  // Check if the user is an admin or return error
   if (!user.admin) {
     throw new Error("You are not authorized to delete meals");
   }
 
   try {
-    // Delete the meal from the database
-    const result = await mongoose.models.Meal.findByIdAndDelete(params.mealId);
+    const mealId = params.mealId;
 
-    if (!result) {
+    // Delete the meal from the database
+    const deletedMeal = await mongoose.models.Meal.findByIdAndDelete(mealId);
+
+    if (!deletedMeal) {
       throw new Error("Meal not found or already deleted");
+    }
+
+    // Find all mealDays that contain this meal
+    const mealDays = await mongoose.models.Mealday.find({
+      "meals.meal": new mongoose.Types.ObjectId(mealId),
+    });
+
+    // Update each mealDay to remove the deleted meal completely
+    for (const mealDay of mealDays) {
+      mealDay.meals = mealDay.meals.filter((meal) => !meal.meal.equals(mealId));
+      await mealDay.save();
     }
 
     return redirect("/meals/all");

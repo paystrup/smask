@@ -90,7 +90,7 @@ export default function MealDetailPage() {
 
   return (
     <Ribbon>
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-12">
         <Link className="flex gap-2 mb-8" to="/meals/all">
           <MoveLeft size={24} />
           <p>Go back</p>
@@ -158,18 +158,18 @@ export default function MealDetailPage() {
 
           <div className="col-span-12 lg:col-span-6 flex flex-col gap-8">
             <div>
-              {meal?.title && (
-                <h1 className="mb-6 text-7xl font-medium tracking-tight first-letter:capitalize line-clamp-5 break-words">
-                  {meal?.title}
-                </h1>
-              )}
-
               <Badge className="bg-gray-200 text-black mb-12 text-sm tracking-tight">
                 Created {new Date(meal.createdAt).toLocaleDateString()}
               </Badge>
 
+              {meal?.title && (
+                <h1 className="mb-6 text-6xl font-medium tracking-tighter first-letter:capitalize line-clamp-5 break-words">
+                  {meal?.title}
+                </h1>
+              )}
+
               {meal?.description && (
-                <p className="text-xl tracking-tight opacity-70">
+                <p className="text-lg tracking-tight opacity-70">
                   {meal?.description}
                 </p>
               )}
@@ -295,7 +295,7 @@ export async function action({ request, params }) {
       allergies: allergies,
       seasons: seasons,
       tags: tagIds,
-      image: imageUrl || (existingMeal ? existingMeal.image : null),
+      image: imageUrl || (existingMeal ? existingMeal.image : undefined),
     };
 
     if (actionType === "saveAsNew") {

@@ -36,7 +36,7 @@ export default function DailyMealCard({ mealDays }) {
       </CardTitle>
 
       <CardContent className="p-0">
-        {relevantMealday.meals.length > 0 ? (
+        {relevantMealday?.meals?.length > 0 ? (
           <>
             {relevantMealday.meals.map((meal) => (
               <div key={meal.id} className="flex items-center gap-4">

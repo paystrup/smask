@@ -16,13 +16,19 @@ import {
 import { Seasons } from "~/db/models";
 import MealCard from "~/components/_feature/cards/MealCard";
 import { cn } from "~/lib/utils";
+import { authenticator } from "~/services/auth.server";
 
 export function meta() {
   return [{ title: "SMASK | All meals" }];
 }
 
 // Reference: https://www.mongodb.com/docs/manual/reference/operator/query/text/
+// TODO: Add limit to query
 export async function loader({ request }) {
+  await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
   try {
     const url = new URL(request.url);
     const query = url.searchParams.get("q");

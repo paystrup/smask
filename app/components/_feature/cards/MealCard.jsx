@@ -87,10 +87,10 @@ export default function MealCard({
               <img
                 src={imageUrl}
                 alt={title}
-                className="w-full h-80 object-cover rounded-2xl"
+                className="w-full h-72 object-cover rounded-2xl"
               />
             ) : (
-              <div className="flex items-center justify-center text-5xl bg-neutral-50 w-full h-80 object-cover rounded-2xl">
+              <div className="flex items-center justify-center text-5xl bg-neutral-50 w-full h-72 object-cover rounded-2xl">
                 <p>🍔</p>
               </div>
             )}
@@ -120,7 +120,7 @@ export default function MealCard({
                 </>
               )}
 
-              {tags.length > 0 && (
+              {/* {tags.length > 0 && (
                 <>
                   {tags.slice(0, tagsToDisplay).map((tag) => (
                     <li key={tag} className="list-none">
@@ -128,7 +128,7 @@ export default function MealCard({
                     </li>
                   ))}
                 </>
-              )}
+              )} */}
 
               {/* {allergies.length > 0 && (
               <>

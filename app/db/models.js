@@ -68,6 +68,9 @@ export const Diets = {
   PESCETARIAN: "pescetarian",
 };
 
+//
+// SCHEMAS
+//
 const tagSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -79,9 +82,6 @@ const tagSchema = new mongoose.Schema({
   },
 });
 
-//
-// SCHEMAS
-//
 // User Schema
 const userSchema = new Schema(
   {
@@ -221,6 +221,11 @@ const guestSchema = new Schema({
     enum: Object.values(Diets),
     default: undefined,
   },
+  addedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
 });
 
 const mealDaySchema = new Schema(
@@ -262,12 +267,14 @@ const mealDaySchema = new Schema(
           ref: "User",
           required: true,
         },
-        guests: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Guest",
-          },
-        ],
+      },
+    ],
+    // Seperate guests from users, so we can track who added them
+    // Also user does not need to attend to add guests
+    guests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Guest",
       },
     ],
   },

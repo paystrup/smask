@@ -29,9 +29,9 @@ export async function loader({ request }) {
     {
       $lookup: {
         from: "users",
-        localField: "attendees.user", // Field to match in the 'attendees' array
-        foreignField: "_id", // Foreign field in the 'users' collection
-        as: "attendeeDetails", // Alias for the populated attendees
+        localField: "attendees.user",
+        foreignField: "_id",
+        as: "attendeeDetails",
       },
     },
     {
@@ -61,6 +61,47 @@ export async function loader({ request }) {
         localField: "guests",
         foreignField: "_id",
         as: "guestDetails",
+      },
+    },
+    {
+      $lookup: {
+        from: "meals",
+        localField: "meals.meal",
+        foreignField: "_id",
+        as: "populatedMeals",
+      },
+    },
+    {
+      $addFields: {
+        meals: {
+          $map: {
+            input: "$meals",
+            as: "mealItem",
+            in: {
+              $mergeObjects: [
+                "$$mealItem",
+                {
+                  meal: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$populatedMeals",
+                          cond: { $eq: ["$$this._id", "$$mealItem.meal"] },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        populatedMeals: 0,
       },
     },
   ]);
@@ -126,10 +167,18 @@ export default function Index() {
     <section className="flex flex-col h-[100svh] p-8 pt-14">
       <div className="flex items-start justify-between w-full mb-12">
         <div className="flex gap-2">
-          <Avatar className="w-14 h-14">
-            <AvatarImage src={userData.image} />
-            <AvatarFallback>{userData.firstName}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            {isAdmin && (
+              <div className="h-5 w-5 text-center rounded-full bg-neutral-100 shadow-2xl flex items-center justify-center absolute left-0 top-0 z-50">
+                <p className="text-xs">✨</p>
+              </div>
+            )}
+
+            <Avatar className="w-14 h-14 ">
+              <AvatarImage src={userData?.image} />
+              <AvatarFallback>{userData?.firstName}</AvatarFallback>
+            </Avatar>
+          </div>
 
           <div className="flex flex-col justify-between">
             <h1 className="text-2xl font-medium tracking-tighter">

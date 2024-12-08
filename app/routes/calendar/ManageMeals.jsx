@@ -19,6 +19,7 @@ import {
 import { Label } from "~/components/ui/label";
 import { cn } from "~/lib/utils";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { Plus, PlusCircle } from "lucide-react";
 
 export default function ManageMeals({ day, allMeals, handleAddMeal }) {
   const [selectedMeal, setSelectedMeal] = useState(null);
@@ -78,8 +79,8 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setIsDialogOpen(true)}>Add meal</Button>
+      <DialogTrigger className="bg-white p-6 rounded-lg w-full m-4">
+        <Plus className="h-4 w-4" />
       </DialogTrigger>
       <DialogContent className="max-w-3xl w-full">
         <DialogHeader>

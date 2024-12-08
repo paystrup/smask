@@ -24,7 +24,7 @@ export default function AddGuestsDialog({
 }) {
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button
           size="lg"
           className={cn(

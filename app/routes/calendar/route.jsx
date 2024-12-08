@@ -35,9 +35,9 @@ export const loader = async ({ request }) => {
       {
         $lookup: {
           from: "users",
-          localField: "attendees.user", // Field to match in the 'attendees' array
-          foreignField: "_id", // Foreign field in the 'users' collection
-          as: "attendeeDetails", // Alias for the populated attendees
+          localField: "attendees.user",
+          foreignField: "_id",
+          as: "attendeeDetails",
         },
       },
       {
@@ -67,6 +67,47 @@ export const loader = async ({ request }) => {
           localField: "guests",
           foreignField: "_id",
           as: "guestDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "meals",
+          localField: "meals.meal",
+          foreignField: "_id",
+          as: "populatedMeals",
+        },
+      },
+      {
+        $addFields: {
+          meals: {
+            $map: {
+              input: "$meals",
+              as: "mealItem",
+              in: {
+                $mergeObjects: [
+                  "$$mealItem",
+                  {
+                    meal: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$populatedMeals",
+                            cond: { $eq: ["$$this._id", "$$mealItem.meal"] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          populatedMeals: 0,
         },
       },
     ]);
@@ -263,7 +304,7 @@ export const action = async ({ request }) => {
   const mealEnd = form.get("mealEnd");
 
   // Helper functions
-  const handleAttend = (mealDay, userId) => {
+  const handleAttend = async (mealDay, userId) => {
     const userIndex = mealDay.attendees.findIndex(
       (attendee) => attendee.user.toString() === userId,
     );
@@ -317,6 +358,12 @@ export const action = async ({ request }) => {
     });
   };
 
+  const handleDeleteMeal = async (mealDay, mealId) => {
+    mealDay.meals = mealDay.meals.filter(
+      (meal) => meal.meal.toString() !== mealId,
+    );
+  };
+
   try {
     let mealDay = await mongoose.models.Mealday.findOne({ date }).populate(
       "guests",
@@ -337,7 +384,7 @@ export const action = async ({ request }) => {
 
     switch (actionType) {
       case "attend":
-        handleAttend(mealDay, user._id);
+        await handleAttend(mealDay, user._id);
         break;
 
       case "attendGuest":
@@ -358,6 +405,10 @@ export const action = async ({ request }) => {
 
       case "addMeal":
         await handleAddMeal(mealDay, mealId, mealStart, mealEnd);
+        break;
+
+      case "removeMeal":
+        await handleDeleteMeal(mealDay, mealId);
         break;
 
       default:

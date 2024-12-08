@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { easeInOut, motion } from "motion/react";
 import ManageMeals from "./ManageMeals";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 export default function CalendarGrid({
   day,
@@ -45,8 +46,6 @@ export default function CalendarGrid({
     counts[guest.diet] = (counts[guest.diet] || 0) + 1;
     return counts;
   }, {});
-
-  console.log(mealDay);
 
   return (
     <motion.div
@@ -121,13 +120,49 @@ export default function CalendarGrid({
         )}
       </div>
 
-      <div className="flex flex-col items-center justify-center py-12 h-full">
-        <ManageMeals
-          allMeals={allMeals}
-          handleAddMeal={handleAddMeal}
-          day={formattedDate}
-        />
-      </div>
+      {mealDay?.meals?.length > 0 ? (
+        <div className="flex flex-col gap-2 mt-2">
+          {mealDay?.meals?.map((meal) => (
+            <button
+              key={meal.meal._id}
+              className="flex flex-col gap-1 text-left bg-black text-white rounded-xl p-6"
+              onClick={() =>
+                handleAddMeal(
+                  formattedDate,
+                  meal.meal._id,
+                  meal?.startTime,
+                  meal?.endTime,
+                  "removeMeal",
+                )
+              }
+            >
+              <p className="opacity-70 text-sm">
+                {format(new Date(meal?.startTime), "HH:mm")}
+                {" - "}
+                {format(new Date(meal?.endTime), "HH:mm")}
+              </p>
+              <h4 className="font-medium text-base">{meal.meal.title}</h4>
+              <p className="text-sm text-gray-400">{meal.meal.description}</p>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1 text-left bg-neutral-100 rounded-xl p-6 mt-2">
+          <h3 className="font-semibold text-sm text-center text-black opacity-30">
+            No meals yet
+          </h3>
+        </div>
+      )}
+
+      {user.admin && (
+        <div className="flex flex-col items-center justify-center py-12 h-full">
+          <ManageMeals
+            allMeals={allMeals}
+            handleAddMeal={handleAddMeal}
+            day={formattedDate}
+          />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 px-4">
         {user && !isMonthView && (

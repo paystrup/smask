@@ -1,13 +1,20 @@
-import { format, isToday } from "date-fns";
+import { format } from "date-fns";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Attendees from "./Attendees";
 import AddGuestsDialog from "./AddGuestsDialog";
-import { Minus, Plus } from "lucide-react";
+import { Ellipsis, Minus, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { easeInOut, motion } from "motion/react";
 import ManageMeals from "./ManageMeals";
-import { ScrollArea } from "~/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import MealCard from "~/components/_feature/cards/MealCard";
+import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
 
 export default function CalendarGrid({
   day,
@@ -35,12 +42,16 @@ export default function CalendarGrid({
   const isUserAttending = !!userAttendance;
 
   const dietCounts = [
-    ...(day?.attendeeDetails || []),
-    ...(day?.guestDetails || []),
+    ...(mealDay?.attendeeDetails || []),
+    ...(mealDay?.guestDetails || []),
   ].reduce((counts, person) => {
     counts[person.diet] = (counts[person.diet] || 0) + 1;
     return counts;
   }, {});
+
+  const veganCount = dietCounts?.vegan || null;
+  const vegetarianCount = dietCounts?.vegetarian || null;
+  const pescetarianCount = dietCounts?.pescetarian || null;
 
   const userGuestDietCounts = userGuestsToday?.reduce((counts, guest) => {
     counts[guest.diet] = (counts[guest.diet] || 0) + 1;
@@ -50,8 +61,8 @@ export default function CalendarGrid({
   return (
     <motion.div
       className={cn(
-        "group flex relative flex-col justify-between text-center h-full overflow-hidden pb-4 transition-colors duration-500 ease-in-out bg-neutral-50 rounded-xl",
-        isToday(day) && "bg-blue-50",
+        "flex relative flex-col text-center h-full overflow-hidden pb-4 transition-colors duration-500 ease-in-out lg:bg-neutral-50 rounded-xl",
+        isMonthView && "col-span-5 lg:col-span-1",
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -94,109 +105,159 @@ export default function CalendarGrid({
             {format(day, "MMM d")}
           </p>
         </div>
-      </div>
 
-      <div className="bg-neutral-100 rounded-xl flex flex-col items-center justify-center min-h-32">
-        {!mealDay && (
-          <div className="flex flex-col gap-2 w-full p-6">
-            <div className="font-semibold text-sm">
-              <h3 className="font-medium text-gray-400">No attendees</h3>
-            </div>
-          </div>
-        )}
-
-        {mealDay && (
-          <div className="flex flex-col items-center justify-center gap-2 w-full p-6">
-            <div className="font-semibold text-sm">
-              {mealDay?.totalAttendees > 0 ? (
-                <h3>Attendees ({mealDay.totalAttendees})</h3>
-              ) : (
+        <div className="bg-neutral-100 rounded-xl flex flex-col items-center justify-center min-h-32">
+          {!mealDay && (
+            <div className="flex flex-col gap-2 w-full p-6">
+              <div className="font-semibold text-sm">
                 <h3 className="font-medium text-gray-400">No attendees</h3>
+              </div>
+            </div>
+          )}
+
+          {mealDay && (
+            <div className="flex flex-col items-center justify-center gap-2 w-full p-4">
+              <div className="font-semibold text-sm">
+                {mealDay?.totalAttendees > 0 ? (
+                  <h3>Attendees ({mealDay.totalAttendees})</h3>
+                ) : (
+                  <h3 className="font-medium text-gray-400">No attendees</h3>
+                )}
+              </div>
+
+              {mealDay.totalAttendees > 0 && <Attendees mealDay={mealDay} />}
+
+              {/* Show diet preferences to the admin to not clutter the UI */}
+              {user.admin && (
+                <div className="flex gap-2 flex-wrap opacity-80 text-black">
+                  {(veganCount || vegetarianCount || pescetarianCount) && (
+                    <p className="w-fit text-xs">
+                      (
+                      {[
+                        veganCount &&
+                          `${veganCount} Vegan${veganCount > 1 ? "s" : ""}`,
+                        vegetarianCount &&
+                          `${vegetarianCount} Vegetarian${vegetarianCount > 1 ? "s" : ""}`,
+                        pescetarianCount &&
+                          `${pescetarianCount} Pescetarian${pescetarianCount > 1 ? "s" : ""}`,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                      )
+                    </p>
+                  )}
+                </div>
               )}
             </div>
-
-            {mealDay.totalAttendees > 0 && <Attendees mealDay={mealDay} />}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {mealDay?.meals?.length > 0 ? (
-        <div className="flex flex-col gap-2 mt-2">
-          {mealDay?.meals?.map((meal) => (
-            <button
-              key={meal.meal._id}
-              className="flex flex-col gap-1 text-left bg-black text-white rounded-xl p-6"
-              onClick={() =>
-                handleAddMeal(
-                  formattedDate,
-                  meal.meal._id,
-                  meal?.startTime,
-                  meal?.endTime,
-                  "removeMeal",
-                )
-              }
-            >
-              <p className="opacity-70 text-sm">
-                {format(new Date(meal?.startTime), "HH:mm")}
-                {" - "}
-                {format(new Date(meal?.endTime), "HH:mm")}
-              </p>
-              <h4 className="font-medium text-base">{meal.meal.title}</h4>
-              <p className="text-sm text-gray-400">{meal.meal.description}</p>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-1 text-left bg-neutral-100 rounded-xl p-6 mt-2">
-          <h3 className="font-semibold text-sm text-center text-black opacity-30">
-            No meals yet
-          </h3>
-        </div>
-      )}
-
-      {user.admin && (
-        <div className="flex flex-col items-center justify-center py-12 h-full">
-          <ManageMeals
-            allMeals={allMeals}
-            handleAddMeal={handleAddMeal}
-            day={formattedDate}
-          />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2 px-4">
-        {user && !isMonthView && (
-          <Button
-            size="lg"
-            onClick={() => handleUserAttend(formattedDate)}
-            className={cn(
-              "w-full",
-              isUserAttending
-                ? "bg-red-500"
-                : "bg-green-500 hover:bg-green-600",
-            )}
-            variant={isUserAttending ? "destructive" : "default"}
-            disabled={isSubmitting}
-            aria-label={isUserAttending ? "Don't attend today" : "Attend"}
+      <div className="h-full max-h-full w-full overflow-y-auto flex flex-col justify-between">
+        {mealDay?.meals?.length > 0 ? (
+          <ScrollArea
+            orientation="horizontal"
+            className="flex flex-col my-2 h-full max-h-full w-full overflow-y-auto"
           >
-            {isUserAttending ? (
-              <Minus className="h-8 w-8" />
-            ) : (
-              <Plus className="h-8 w-8" />
-            )}
-            {/* {isUserAttending ? "Don't attend today" : "Attend"} */}
-          </Button>
+            <div className="flex flex-col gap-2">
+              {mealDay?.meals
+                ?.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+                .map((meal, i) => (
+                  <div className="relative h-full w-full" key={i}>
+                    <MealCard
+                      title={meal?.meal?.title}
+                      imageUrl={meal?.meal?.image}
+                      link={`/meals/${meal.meal._id}`}
+                      view="grid"
+                      startTime={meal?.startTime}
+                      endTime={meal?.endTime}
+                      hideTags
+                      size="sm"
+                      dynamic
+                    />
+
+                    {user.admin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="z-50 hover:opacity-80 duration-300 ease-in-out absolute m-4 bg-white p-2 top-0 right-0 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300">
+                          <Ellipsis className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleAddMeal(
+                                formattedDate,
+                                meal?.meal._id,
+                                meal?.meal?.startTime,
+                                meal?.meal?.endTime,
+                                "removeMeal",
+                              )
+                            }
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        ) : (
+          <div className="flex flex-col gap-1 text-left bg-neutral-100 rounded-xl p-6 mt-2">
+            <h3 className="font-semibold text-sm text-center text-black opacity-30">
+              No meals yet
+            </h3>
+          </div>
         )}
 
-        {user && (
-          <AddGuestsDialog
-            formattedDate={formattedDate}
-            userGuestsToday={userGuestsToday}
-            userGuestDietCounts={userGuestDietCounts}
-            handleGuestAttend={handleGuestAttend}
-            isSubmitting={isSubmitting}
-          />
-        )}
+        <div
+          className={cn(
+            "flex flex-col gap-2 px-4 h-fit justify-end",
+            isMonthView && "px-0",
+          )}
+        >
+          {user.admin && (
+            <ManageMeals
+              allMeals={allMeals}
+              handleAddMeal={handleAddMeal}
+              day={formattedDate}
+            />
+          )}
+
+          {user && !isMonthView && (
+            <Button
+              size="lg"
+              onClick={() => handleUserAttend(formattedDate)}
+              className={cn(
+                "w-full",
+                isUserAttending
+                  ? "bg-red-500"
+                  : "bg-green-500 hover:bg-green-600",
+              )}
+              variant={isUserAttending ? "destructive" : "default"}
+              disabled={isSubmitting}
+              aria-label={isUserAttending ? "Don't attend today" : "Attend"}
+            >
+              {isUserAttending ? (
+                <Minus className="h-8 w-8" />
+              ) : (
+                <Plus className="h-8 w-8" />
+              )}
+              {/* {isUserAttending ? "Don't attend today" : "Attend"} */}
+            </Button>
+          )}
+
+          {user && (
+            <AddGuestsDialog
+              formattedDate={formattedDate}
+              userGuestsToday={userGuestsToday}
+              userGuestDietCounts={userGuestDietCounts}
+              handleGuestAttend={handleGuestAttend}
+              isSubmitting={isSubmitting}
+            />
+          )}
+        </div>
       </div>
     </motion.div>
   );

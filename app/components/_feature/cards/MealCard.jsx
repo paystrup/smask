@@ -1,6 +1,15 @@
 import { Link } from "@remix-run/react";
+import { format } from "date-fns";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
+import { cn } from "~/lib/utils";
+
+const heightMap = {
+  sm: "h-48", // 192px
+  md: "h-64", // 256px
+  lg: "h-96", // 384px
+  default: "h-72", // current default (288px)
+};
 
 export default function MealCard({
   title,
@@ -11,18 +20,24 @@ export default function MealCard({
   imageUrl,
   link,
   view = "grid" | "list",
+  className,
+  hideTags = false,
+  startTime,
+  endTime,
+  size,
 }) {
+  const imageHeight = size ? heightMap[size] : heightMap.default;
   const tagsToDisplay = 2;
   if (view === "list")
     return (
-      <Link to={link} className="w-full h-fit">
+      <Link to={link} className={cn("w-full h-fit", className)}>
         <div className="flex gap-4">
           <div className="relative aspect-square min-w-32 min-h-32 max-h-32 max-w-32">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={title}
-                className="h-full w-full object-cover rounded-2xl"
+                className="h-full w-full object-cover rounded-xl scale-100"
               />
             ) : (
               <div className="flex items-center justify-center text-5xl bg-neutral-50 h-full w-full object-cover rounded-2xl">
@@ -44,8 +59,8 @@ export default function MealCard({
             <ul className="flex flex-wrap gap-2 mt-8 lg:mt-0">
               {seasons.length > 0 && (
                 <>
-                  {seasons.map((season) => (
-                    <li key={season}>
+                  {seasons.map((season, i) => (
+                    <li key={i}>
                       <Badge variant="primary">{season}</Badge>
                     </li>
                   ))}
@@ -54,8 +69,8 @@ export default function MealCard({
 
               {tags.length > 0 && (
                 <>
-                  {tags.slice(0, tagsToDisplay).map((tag) => (
-                    <li key={tag} className="list-none">
+                  {tags.slice(0, tagsToDisplay).map((tag, i) => (
+                    <li key={i} className="list-none">
                       <Badge>{tag.name}</Badge>
                     </li>
                   ))}
@@ -80,28 +95,39 @@ export default function MealCard({
     );
   if (view === "grid")
     return (
-      <Link to={link} className="rounded-2xl">
+      <Link to={link} className="rounded-xl text-start group">
         <div className="rounded-2xl shadow-sm w-full h-fit relative text-white">
-          <div className="relative">
+          <div
+            className={`relative overflow-hidden rounded-2xl  ${imageHeight}`}
+          >
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={title}
-                className="w-full h-72 object-cover rounded-2xl"
+                className={`w-full object-cover rounded-2xl ${imageHeight} group-hover:scale-[102%] transition-all duration-200 ease-in-out`}
               />
             ) : (
-              <div className="flex items-center justify-center text-5xl bg-neutral-50 w-full h-72 object-cover rounded-2xl">
-                <p>🍔</p>
+              <div
+                className={`flex items-center justify-center text-5xl bg-neutral-300 w-full object-cover rounded-2xl ${imageHeight}`}
+              >
+                <p>🍽️</p>
               </div>
             )}
 
             {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-2xl" />
+            <div className="absolute inset-0 bg-gradient-to-t from-neutral-700/100 to-transparent rounded-2xl" />
           </div>
 
-          <div className="p-6 rounded-b-2xl flex flex-col gap-2 absolute bottom-0 left-0">
-            <div>
-              <h3 className="text-2xl font-semibold first-letter:capitalize">
+          {startTime && endTime && (
+            <Badge className="opacity-80 text-xs font-medium tracking-tight absolute top-0 left-0 m-4">
+              {format(new Date(startTime), "HH:mm")} -{" "}
+              {format(new Date(endTime), "HH:mm")}
+            </Badge>
+          )}
+
+          <div className="p-6 rounded-b-2xl flex flex-col gap-4 absolute bottom-0 left-0">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xl font-semibold tracking-tight first-letter:capitalize">
                 {title}
               </h3>
               <p className="opacity-80 first-letter:capitalize line-clamp-1">
@@ -109,18 +135,19 @@ export default function MealCard({
               </p>
             </div>
 
-            <ul className="flex flex-wrap gap-2">
-              {seasons.length > 0 && (
-                <>
-                  {seasons.map((season) => (
-                    <li key={season}>
-                      <Badge variant="primary">{season}</Badge>
-                    </li>
-                  ))}
-                </>
-              )}
+            {!hideTags && (
+              <ul className="flex flex-wrap gap-2">
+                {seasons.length > 0 && (
+                  <>
+                    {seasons.map((season, i) => (
+                      <li key={i}>
+                        <Badge variant="primary">{season}</Badge>
+                      </li>
+                    ))}
+                  </>
+                )}
 
-              {/* {tags.length > 0 && (
+                {/* {tags.length > 0 && (
                 <>
                   {tags.slice(0, tagsToDisplay).map((tag) => (
                     <li key={tag} className="list-none">
@@ -130,7 +157,7 @@ export default function MealCard({
                 </>
               )} */}
 
-              {/* {allergies.length > 0 && (
+                {/* {allergies.length > 0 && (
               <>
                 {allergies.slice(0, tagsToDisplay).map((allergy, i) => (
                   <li key={allergy + i} className="list-none">
@@ -139,7 +166,8 @@ export default function MealCard({
                 ))}
               </>
             )} */}
-            </ul>
+              </ul>
+            )}
           </div>
         </div>
       </Link>

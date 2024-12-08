@@ -212,7 +212,7 @@ export default function Meals() {
 
       <div className="flex flex-col gap-12 pb-20">
         {meals.length > 0 ? (
-          <ul className="grid grid-cols-12 gap-8">
+          <ul className="grid grid-cols-12 gap-4">
             {meals.map((meal) => {
               return (
                 <li

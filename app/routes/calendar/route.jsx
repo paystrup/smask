@@ -18,10 +18,18 @@ import {
   startOfMonth,
 } from "date-fns";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import CalendarGrid from "./CalendarGrid";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 export const loader = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {
@@ -126,10 +134,10 @@ export const loader = async ({ request }) => {
 };
 
 export default function CreateMealDays() {
-  const navigation = useNavigation();
-  const isSubmitting = navigation.formAction === "/calendar";
   const { user, mealDays, allMeals } = useLoaderData();
+  const navigation = useNavigation();
   const submit = useSubmit();
+  const isSubmitting = navigation.formAction === "/calendar";
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isMonthView, setIsMonthView] = useState(false);
   const isCurrentPeriod = isSameDay(currentDate, new Date());
@@ -162,7 +170,14 @@ export default function CreateMealDays() {
     if (isMonthView) {
       const monthStart = startOfMonth(currentDate);
       const monthEnd = endOfMonth(currentDate);
-      return eachDayOfInterval({ start: monthStart, end: monthEnd });
+      let days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+      // Filter out weekends (Saturday and Sunday)
+      if (hideWeekends) {
+        days = days.filter((day) => getDay(day) !== 0 && getDay(day) !== 6);
+      }
+
+      return days;
     } else {
       const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -199,8 +214,26 @@ export default function CreateMealDays() {
     submit(formData, { method: "post" });
   };
 
+  const handleAttendPeriod = (action) => {
+    const daysToAttend = getDaysToRender().map(
+      // Make sure all dates are format as 'yyyy-MM-dd'
+      (day) => format(day, "yyyy-MM-dd"),
+    );
+    const formData = new FormData();
+    // Send array of dates as a JSON string
+    formData.append("action", action);
+    formData.append("dates", JSON.stringify(daysToAttend));
+    formData.append("action", "attendAll");
+    submit(formData, { method: "post" });
+  };
+
   return (
-    <section className="flex flex-col w-full h-[100svh]">
+    <section
+      className={cn(
+        "flex flex-col w-full h-full",
+        !isMonthView && "lg:h-[100svh]",
+      )}
+    >
       <div className="w-full flex justify-end items-center min-h-10 mt-4 px-4 ps-20 gap-2">
         {!isCurrentPeriod && (
           <Button className="self-end" onClick={showCurrentPeriod}>
@@ -209,15 +242,40 @@ export default function CreateMealDays() {
         )}
 
         <Button
+          as="div"
           variant="outline"
           onClick={toggleView}
           aria-label={isMonthView ? "View week" : "View month"}
         >
           View {isMonthView ? "week" : "month"}
         </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              Attend {isMonthView ? "month" : "week"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleAttendPeriod("attendPeriod")}
+            >
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Attend {isMonthView ? "month" : "week"}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleAttendPeriod("removePeriodAttendance")}
+            >
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Remove {isMonthView ? "month" : "week"} attendance
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <header className="flex items-center justify-between bg-white py-8 px-8">
+      <header className="flex items-center justify-between bg-white pb-8 pt-4 px-8">
         <Button
           onClick={() => navigatePeriod("prev")}
           aria-label={`Previous ${isMonthView ? "month" : "week"}`}
@@ -258,11 +316,13 @@ export default function CreateMealDays() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "flex-1 h-full grid gap-2 mx-4 overflow-auto",
+            "flex-1 h-full grid gap-12 lg:gap-2 mx-4 overflow-auto",
             isMonthView
-              ? "grid-cols-7"
+              ? hideWeekends
+                ? "grid-cols-5 gap-y-10 lg:gap-y-12"
+                : "grid-cols-7 gap-y-10 lg:gap-y-12"
               : hideWeekends
-                ? "grid-cols-1 md:grid-cols-5"
+                ? "grid-cols-1 lg:grid-cols-5"
                 : "grid-cols-1 md:grid-cols-7",
           )}
         >
@@ -302,6 +362,7 @@ export const action = async ({ request }) => {
   const mealId = form.get("meal");
   const mealStart = form.get("mealStart");
   const mealEnd = form.get("mealEnd");
+  const dates = JSON.parse(form.get("dates") || "[]");
 
   // Helper functions
   const handleAttend = async (mealDay, userId) => {
@@ -351,6 +412,11 @@ export const action = async ({ request }) => {
   };
 
   const handleAddMeal = async (mealDay, mealId, mealStart, mealEnd) => {
+    if (!user.admin) {
+      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+      return json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     mealDay.meals.push({
       meal: mealId,
       startTime: mealStart,
@@ -359,9 +425,85 @@ export const action = async ({ request }) => {
   };
 
   const handleDeleteMeal = async (mealDay, mealId) => {
+    if (!user.admin) {
+      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+      return json({ error: "Unauthorized" }, { status: 401 });
+    }
     mealDay.meals = mealDay.meals.filter(
       (meal) => meal.meal.toString() !== mealId,
     );
+  };
+
+  const attendPeriod = async (dates) => {
+    try {
+      for (const date of dates) {
+        let mealDay = await mongoose.models.Mealday.findOne({ date });
+
+        if (!mealDay) {
+          console.log(`Creating mealDay for date: ${date}`);
+          mealDay = await mongoose.models.Mealday.create({
+            date,
+            meals: [],
+            attendees: [],
+            guests: [],
+          });
+        }
+
+        const userIndex = mealDay.attendees.findIndex(
+          (attendee) => attendee.user.toString() === user._id.toString(),
+        );
+
+        if (userIndex === -1) {
+          console.log(`Adding user ${user._id} to attendees for date: ${date}`);
+          mealDay.attendees.push({ user: user._id });
+          await mealDay.save();
+        } else {
+          console.log(`User ${user._id} is already attending date: ${date}`);
+        }
+      }
+
+      return json({ success: true });
+    } catch (error) {
+      console.error("Error attending all week:", error);
+      return json({ error: "Failed to attend all week" }, { status: 400 });
+    }
+  };
+
+  const removePeriodAttendance = async (dates) => {
+    try {
+      for (const date of dates) {
+        let mealDay = await mongoose.models.Mealday.findOne({ date });
+
+        if (!mealDay) {
+          console.log(`No mealDay found for date: ${date}, skipping.`);
+          continue;
+        }
+
+        const userIndex = mealDay.attendees.findIndex(
+          (attendee) => attendee.user.toString() === user._id.toString(),
+        );
+
+        if (userIndex !== -1) {
+          console.log(
+            `Removing user ${user._id} from attendees for date: ${date}`,
+          );
+          mealDay.attendees.splice(userIndex, 1);
+          await mealDay.save();
+        } else {
+          console.log(
+            `User ${user._id} is not attending on date: ${date}, skipping.`,
+          );
+        }
+      }
+
+      return json({ success: true });
+    } catch (error) {
+      console.error("Error removing attendance for all week:", error);
+      return json(
+        { error: "Failed to remove attendance for all week" },
+        { status: 400 },
+      );
+    }
   };
 
   try {
@@ -382,6 +524,7 @@ export const action = async ({ request }) => {
       return json({ error: "Meal day not found" }, { status: 404 });
     }
 
+    // Execute actions
     switch (actionType) {
       case "attend":
         await handleAttend(mealDay, user._id);
@@ -409,6 +552,14 @@ export const action = async ({ request }) => {
 
       case "removeMeal":
         await handleDeleteMeal(mealDay, mealId);
+        break;
+
+      case "attendPeriod":
+        await attendPeriod(dates);
+        break;
+
+      case "removePeriodAttendance":
+        await removePeriodAttendance(dates);
         break;
 
       default:

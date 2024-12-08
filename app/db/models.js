@@ -171,7 +171,7 @@ const mealSchema = new Schema(
       type: String,
       required: true,
       minLength: [3, "Meal title is too short"],
-      maxLength: [50, "Meal title is too long"],
+      maxLength: [100, "Meal title is too long"],
     },
     description: {
       type: String,

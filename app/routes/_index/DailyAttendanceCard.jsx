@@ -97,17 +97,17 @@ export function DailyAttendanceCard({
         <div className="flex mt-4 gap-2 flex-wrap">
           {veganCount && (
             <Badge variant="default" className="w-fit">
-              {veganCount} Vegan
+              {veganCount} Vegan{veganCount > 1 && "s"}
             </Badge>
           )}
           {vegetarianCount && (
             <Badge variant="default" className="w-fit">
-              {vegetarianCount} Vegetarian
+              {vegetarianCount} Vegetarian{vegetarianCount > 1 && "s"}
             </Badge>
           )}
           {pescetarianCount && (
             <Badge variant="default" className="w-fit">
-              {pescetarianCount} Pescetarian
+              {pescetarianCount} Pescetarian{pescetarianCount > 1 && "s"}
             </Badge>
           )}
         </div>

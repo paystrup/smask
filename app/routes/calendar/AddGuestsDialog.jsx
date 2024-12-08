@@ -135,7 +135,7 @@ export default function AddGuestsDialog({
           </Form>
 
           <DialogClose className="w-full">
-            <Button className="w-full" variant="secondary">
+            <Button className="w-full bg-neutral-200" variant="secondary">
               Close
             </Button>
           </DialogClose>

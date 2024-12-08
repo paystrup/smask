@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,7 @@ import {
 import { Label } from "~/components/ui/label";
 import { cn } from "~/lib/utils";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { Plus, PlusCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export default function ManageMeals({ day, allMeals, handleAddMeal }) {
   const [selectedMeal, setSelectedMeal] = useState(null);
@@ -29,6 +29,7 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
   const [sortOrder, setSortOrder] = useState("newest");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [visibleMeals, setVisibleMeals] = useState(6);
+  const [timeError, setTimeError] = useState("");
 
   const filteredAndSortedMeals = useMemo(() => {
     return allMeals
@@ -48,8 +49,24 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
       });
   }, [allMeals, searchQuery, sortOrder]);
 
+  useEffect(() => {
+    validateTimes();
+  }, [startTime, endTime]);
+
+  const validateTimes = () => {
+    if (startTime && endTime) {
+      if (endTime <= startTime) {
+        setTimeError("End time must be after start time");
+      } else {
+        setTimeError("");
+      }
+    } else {
+      setTimeError("");
+    }
+  };
+
   const handleSubmit = () => {
-    if (selectedMeal && startTime && endTime) {
+    if (selectedMeal && startTime && endTime && !timeError) {
       handleAddMeal(
         day,
         selectedMeal._id,
@@ -65,6 +82,7 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
     setSelectedMeal(null);
     setStartTime("");
     setEndTime("");
+    setTimeError("");
     setIsDialogOpen(false);
   };
 
@@ -77,10 +95,16 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
     setEndTime("12:30");
   };
 
+  const handleAddDefaultBreakfast = () => {
+    setStartTime("08:00");
+    setEndTime("10:00");
+  };
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger className="bg-white p-6 rounded-lg w-full m-4">
+      <DialogTrigger className="bg-black text-white inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-4 w-full gap-2">
         <Plus className="h-4 w-4" />
+        Add meal
       </DialogTrigger>
       <DialogContent className="max-w-3xl w-full">
         <DialogHeader>
@@ -111,13 +135,13 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
               </SelectContent>
             </Select>
           </div>
-          <ScrollArea className="h-72 my-6">
+          <ScrollArea className="h-72 my-6 bg-neutral-50 pb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredAndSortedMeals.length > 0 &&
                 filteredAndSortedMeals.slice(0, visibleMeals).map((meal) => (
                   <button
                     className={cn(
-                      "h-auto col-span-1 md:col-span-2 py-4 px-4 me-6 flex flex-col items-start text-left rounded-lg hover:bg-neutral-100 hover:text-black transition-colors ease-in-out duration-300",
+                      "h-auto col-span-1 md:col-span-2 py-4 px-4 me-2 flex flex-col items-start text-left rounded-lg hover:bg-neutral-100 hover:text-black transition-colors ease-in-out duration-300",
                       selectedMeal?._id === meal?._id.toString() &&
                         "bg-black text-white hover:bg-neutral-800 hover:text-white",
                     )}
@@ -150,35 +174,79 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
             )}
           </ScrollArea>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="start-time">Start Time</Label>
-                <Input
-                  id="start-time"
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="end-time">End Time</Label>
-                <Input
-                  id="end-time"
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                />
-              </div>
+          <div className="space-y-4 mt-10">
+            <div className="space-y-2">
+              <Label className="text-lg tracking-tight">
+                Pick a start and end time
+              </Label>
+              {(() => {
+                const timeOptions = [];
+                for (let hour = 7; hour <= 24; hour++) {
+                  for (let min = 0; min < 60; min += 30) {
+                    if (hour === 24 && min > 0) break;
+                    const timeString = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+                    timeOptions.push({
+                      value: timeString,
+                      label: timeString,
+                    });
+                  }
+                }
+
+                return (
+                  <div className="flex gap-2 w-full">
+                    <Select value={startTime} onValueChange={setStartTime}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Start time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={time.value} value={time.value}>
+                            {time.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={endTime} onValueChange={setEndTime}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="End time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={time.value} value={time.value}>
+                            {time.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                );
+              })()}
             </div>
-            <Button onClick={handleAddDefaultLunch} variant="outline">
-              Add Default Lunch (12:00 - 12:30)
-            </Button>
+            <div className="flex w-full items-end justify-items-end space-x-2 pt-2 pb-4">
+              <Button
+                onClick={handleAddDefaultBreakfast}
+                variant="default"
+                size="sm"
+              >
+                Breakfast (08:00 - 10:00)
+              </Button>
+              <Button
+                onClick={handleAddDefaultLunch}
+                variant="default"
+                size="sm"
+              >
+                Lunch (12:00 - 12:30)
+              </Button>
+            </div>
+            {timeError && (
+              <p className="text-red-500 text-sm mt-2">{timeError}</p>
+            )}
           </div>
         </div>
-        <DialogFooter className="mt-4 flex flex-col gap-2">
+        <DialogFooter className="mt-4 flex flex-col space-x-2">
           <Button
-            variant="desctructive"
+            variant="destructive"
             onClick={handleCancel}
             className="w-full"
           >
@@ -186,10 +254,10 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!selectedMeal || !startTime || !endTime}
-            className="w-full"
+            disabled={!selectedMeal || !startTime || !endTime || timeError}
+            className="w-full m-0"
           >
-            Submit
+            Add meal
           </Button>
         </DialogFooter>
       </DialogContent>

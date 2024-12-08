@@ -1,4 +1,4 @@
-import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
@@ -18,47 +18,77 @@ import {
   startOfMonth,
 } from "date-fns";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
-import Avatar from "~/components/_feature/avatar/Avatar";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "~/lib/utils";
-
-const maxAttendeeCount = 10;
+import { AnimatePresence, motion } from "motion/react";
+import CalendarGrid from "./CalendarGrid";
 
 export const loader = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
   });
-  const userData = await mongoose.models.User.findById(user._id);
-  // Fetch all MealDays and calculate the total number of attendees
-  const mealDays = await mongoose.models.Mealday.aggregate([
-    {
-      $lookup: {
-        from: "users", // Adjust collection name to match your User model
-        localField: "attendees.user",
-        foreignField: "_id",
-        as: "attendeeDetails",
-      },
-    },
-    {
-      $addFields: {
-        totalAttendees: {
-          $sum: "$attendees.numberOfPeople",
+
+  try {
+    const userData = await mongoose.models.User.findById(user._id);
+
+    const mealDays = await mongoose.models.Mealday.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "attendees.user", // Field to match in the 'attendees' array
+          foreignField: "_id", // Foreign field in the 'users' collection
+          as: "attendeeDetails", // Alias for the populated attendees
         },
       },
-    },
-  ]);
+      {
+        $addFields: {
+          totalAttendees: {
+            $sum: [
+              { $size: { $ifNull: ["$attendees", []] } },
+              { $size: { $ifNull: ["$guests", []] } },
+            ],
+          },
+        },
+      },
+      {
+        $addFields: {
+          guests: {
+            $map: {
+              input: "$guests",
+              as: "guestId",
+              in: { $toObjectId: "$$guestId" },
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "guests",
+          localField: "guests",
+          foreignField: "_id",
+          as: "guestDetails",
+        },
+      },
+    ]);
 
-  // Fetch user's meal days
-  const userMeals = await mongoose.models.Mealday.find({
-    attendees: { $elemMatch: { user: user._id } },
-  });
-  return json({ user, userData, mealDays, userMeals });
+    // Fetch user's meal days
+    const userMeals = await mongoose.models.Mealday.find({
+      attendees: { $elemMatch: { user: user._id } },
+    });
+
+    const allMeals = await mongoose.models.Meal.find().populate("tags");
+    return json({ user, userData, mealDays, userMeals, allMeals });
+  } catch (error) {
+    console.error(error);
+    return json({ error: "Failed to fetch meal days" }, { status: 400 });
+  }
 };
 
 export default function CreateMealDays() {
-  const { user, mealDays } = useLoaderData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.formAction === "/calendar";
+  const { user, mealDays, allMeals } = useLoaderData();
   const submit = useSubmit();
-
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isMonthView, setIsMonthView] = useState(false);
   const isCurrentPeriod = isSameDay(currentDate, new Date());
@@ -103,16 +133,28 @@ export default function CreateMealDays() {
 
   const days = getDaysToRender();
 
-  const handleAttendeeCountChange = (day, userId, currentCount, change) => {
-    const newCount = Math.min(
-      Math.max(0, currentCount + change),
-      maxAttendeeCount,
-    );
+  const handleUserAttend = (day) => {
     const formData = new FormData();
-    formData.append("date", day.toISOString());
-    formData.append("userId", userId);
-    formData.append("attendeeCount", newCount.toString());
-    formData.append("action", newCount === 0 ? "remove" : "attend");
+    formData.append("date", day);
+    formData.append("action", "attend");
+    submit(formData, { method: "post" });
+  };
+
+  const handleGuestAttend = (day, diet, action) => {
+    const formData = new FormData();
+    formData.append("date", day);
+    formData.append("diet", diet);
+    formData.append("action", action); // action 'attendGuest' or 'removeGuest'
+    submit(formData, { method: "post" });
+  };
+
+  const handleMeal = (day, meal, startTime, endTime, action) => {
+    const formData = new FormData();
+    formData.append("date", day);
+    formData.append("meal", meal);
+    formData.append("mealStart", startTime);
+    formData.append("mealEnd", endTime);
+    formData.append("action", action); // action 'removeMeal' or 'addMeal'
     submit(formData, { method: "post" });
   };
 
@@ -167,264 +209,162 @@ export default function CreateMealDays() {
         </Button>
       </header>
 
-      <div
-        className={cn(
-          "flex-1 h-full grid overflow-auto",
-          isMonthView
-            ? "grid-cols-7"
-            : hideWeekends
-              ? "grid-cols-1 md:grid-cols-5"
-              : "grid-cols-1 md:grid-cols-7",
-        )}
-      >
-        {days.map((day, i) => {
-          const dayKey = format(day, "yyyy-MM-dd");
-          const mealDay = mealDaysMap[dayKey];
-          const sliceCount = 5;
-          const userAttendance = mealDay?.attendees.find(
-            (attendee) => attendee.user.toString() === user._id,
-          );
-          const isUserAttending = !!userAttendance;
-          const attendeeCount = userAttendance
-            ? userAttendance.numberOfPeople
-            : 0;
-
-          return (
-            <div
-              key={day.toISOString()}
-              className={cn(
-                "group flex relative flex-col justify-between text-center h-full overflow-hidden pb-8 transition-colors duration-500 ease-in-out",
-                i % 2 === 0
-                  ? "bg-gradient-to-b from-gray-100 to-white"
-                  : "bg-white",
-                isUserAttending && "bg-gradient-to-b from-green-100 to-white",
-              )}
-            >
-              <div>
-                <div
-                  className={cn(
-                    "p-4 border-b",
-                    isToday(day) ? "bg-blue-50" : "bg-gray-100",
-                    isUserAttending && "bg-green-100",
-                  )}
-                >
-                  <h2
-                    className={`font-semibold text-xl ${
-                      isToday(day) ? "text-primary-blue" : "text-gray-800"
-                    }`}
-                  >
-                    {format(day, "EEE")}
-                  </h2>
-                  <p
-                    className={`text-sm ${
-                      isToday(day) ? "text-blue-600" : "text-gray-600"
-                    }`}
-                  >
-                    {format(day, "MMMM d")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center justify-center mt-8 h-full">
-                <div className="space-y-2">
-                  {mealDay?.meals?.length > 0 ? (
-                    <p>There is meals</p>
-                  ) : (
-                    <p className="text-gray-500 text-center text-sm">
-                      No meals yet
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                {!mealDay && (
-                  <div className="flex flex-col gap-2 self-end w-full border-b">
-                    <div className="p-4 text-sm font-medium text-gray-400">
-                      <h3>No attendees</h3>
-                    </div>
-                  </div>
-                )}
-
-                {mealDay && (
-                  <div className="flex flex-col gap-2 self-end w-full items-center justify-between text-center p-6">
-                    <div className="font-semibold text-sm">
-                      {mealDay?.totalAttendees > 0 ? (
-                        <h3>Attendees ({mealDay.totalAttendees})</h3>
-                      ) : (
-                        <h3 className="font-medium text-gray-400">
-                          No attendees
-                        </h3>
-                      )}
-                    </div>
-
-                    {mealDay.totalAttendees > 0 && (
-                      <ul className="flex flex-wrap items-center justify-center gap-2 p-2 -ms-4 w-full">
-                        {mealDay.attendeeDetails
-                          .sort((a, b) => {
-                            const firstNameA =
-                              a?.firstName?.toLowerCase() || "";
-                            const firstNameB =
-                              b?.firstName?.toLowerCase() || "";
-                            return firstNameA.localeCompare(firstNameB);
-                          })
-                          .slice(0, sliceCount)
-                          .map((attendee) => (
-                            <li
-                              key={attendee?.user?._id || Math.random()}
-                              className="-me-4"
-                            >
-                              {attendee?.image ? (
-                                <img
-                                  src={attendee?.image}
-                                  alt={`${attendee?.firstName || "Guest"} ${
-                                    attendee?.lastName || ""
-                                  }`}
-                                  className="h-8 w-8 border rounded-full object-cover"
-                                />
-                              ) : (
-                                <Avatar
-                                  className="border"
-                                  name={attendee?.firstName || "?"}
-                                />
-                              )}
-                            </li>
-                          ))}
-
-                        {Array.from(
-                          {
-                            length: Math.min(
-                              sliceCount - mealDay.attendeeDetails.length,
-                              mealDay.totalAttendees -
-                                mealDay.attendeeDetails.length,
-                            ),
-                          },
-                          (_, index) => (
-                            <li key={`placeholder-${index}`} className="-me-4">
-                              <Avatar name="?" />
-                            </li>
-                          ),
-                        )}
-
-                        {mealDay.totalAttendees > sliceCount && (
-                          <li className="flex items-center justify-center h-8 w-8 bg-primary-blue text-white text-xs font-bold rounded-full">
-                            +{mealDay.totalAttendees - sliceCount}
-                          </li>
-                        )}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {user && !isMonthView && (
-                <div className="p-4 w-full self-end">
-                  {isUserAttending ? (
-                    <div className="flex items-center justify-center space-x-4">
-                      <Button
-                        type="button"
-                        className="rounded-full"
-                        onClick={() =>
-                          handleAttendeeCountChange(
-                            day,
-                            user._id,
-                            attendeeCount,
-                            -1,
-                          )
-                        }
-                        variant="outline"
-                        size="icon"
-                      >
-                        <Minus className="h-2 w-2" />
-                      </Button>
-                      <span className="text-md font-semibold">
-                        {attendeeCount}
-                      </span>
-                      <Button
-                        type="button"
-                        className="rounded-full"
-                        onClick={() =>
-                          handleAttendeeCountChange(
-                            day,
-                            user._id,
-                            attendeeCount,
-                            1,
-                          )
-                        }
-                        variant="outline"
-                        size="icon"
-                      >
-                        <Plus className="h-2 w-2" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        handleAttendeeCountChange(day, user._id, 0, 1)
-                      }
-                      className="w-full"
-                    >
-                      Attend
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={isMonthView ? "month" : "week"}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className={cn(
+            "flex-1 h-full grid gap-2 mx-4 overflow-auto",
+            isMonthView
+              ? "grid-cols-7"
+              : hideWeekends
+                ? "grid-cols-1 md:grid-cols-5"
+                : "grid-cols-1 md:grid-cols-7",
+          )}
+        >
+          {days.map((day, i) => {
+            return (
+              <CalendarGrid
+                day={day}
+                i={i}
+                user={user}
+                handleGuestAttend={handleGuestAttend}
+                mealDaysMap={mealDaysMap}
+                isMonthView={isMonthView}
+                handleUserAttend={handleUserAttend}
+                handleAddMeal={handleMeal}
+                isToday={isToday}
+                key={i}
+                isSubmitting={isSubmitting}
+                allMeals={allMeals}
+              />
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }
 
 export const action = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
   const form = await request.formData();
-  const userId = form.get("userId");
   const date = new Date(form.get("date"));
   const actionType = form.get("action");
-  const attendeeCount = Math.min(
-    parseInt(form.get("attendeeCount")),
-    maxAttendeeCount,
-  );
+  const guestDiet = form.get("diet");
+  const mealId = form.get("meal");
+  const mealStart = form.get("mealStart");
+  const mealEnd = form.get("mealEnd");
+
+  // Helper functions
+  const handleAttend = (mealDay, userId) => {
+    const userIndex = mealDay.attendees.findIndex(
+      (attendee) => attendee.user.toString() === userId,
+    );
+
+    if (userIndex > -1) {
+      mealDay.attendees.splice(userIndex, 1); // Remove attendee
+    } else {
+      mealDay.attendees.push({ user: userId }); // Add attendee
+    }
+  };
+
+  const handleAttendGuest = async (mealDay, diet, userId) => {
+    const guest = await mongoose.models.Guest.create({
+      diet,
+      addedBy: userId,
+    });
+    mealDay.guests.push(guest._id);
+  };
+
+  const handleRemoveGuest = (mealDay, diet, userId) => {
+    const guestIndex = mealDay.guests.findIndex(
+      (guest) => guest.addedBy.toString() === userId && guest.diet === diet,
+    );
+
+    if (guestIndex > -1) {
+      mealDay.guests.splice(guestIndex, 1); // Remove guest
+      return true;
+    }
+    return false;
+  };
+
+  const handleRemoveAllGuests = async (mealDay, userId) => {
+    const guestsToRemove = mealDay.guests.filter(
+      (guest) => guest.addedBy.toString() === userId,
+    );
+
+    await mongoose.models.Guest.deleteMany({
+      _id: { $in: guestsToRemove.map((guest) => guest._id) },
+    });
+
+    mealDay.guests = mealDay.guests.filter(
+      (guest) => guest.addedBy.toString() !== userId,
+    );
+  };
+
+  const handleAddMeal = async (mealDay, mealId, mealStart, mealEnd) => {
+    mealDay.meals.push({
+      meal: mealId,
+      startTime: mealStart,
+      endTime: mealEnd,
+    });
+  };
 
   try {
-    let mealDay = await mongoose.models.Mealday.findOne({ date });
+    let mealDay = await mongoose.models.Mealday.findOne({ date }).populate(
+      "guests",
+    );
 
-    if (!mealDay && actionType === "attend") {
+    if (!mealDay) {
       mealDay = await mongoose.models.Mealday.create({
         date,
         meals: [],
         attendees: [],
+        guests: [],
       });
     }
 
-    if (mealDay) {
-      const existingAttendeeIndex = mealDay.attendees.findIndex(
-        (a) => a.user.toString() === userId,
-      );
-
-      if (actionType === "remove" || attendeeCount === 0) {
-        if (existingAttendeeIndex !== -1) {
-          mealDay.attendees.splice(existingAttendeeIndex, 1);
-        }
-      } else if (actionType === "attend") {
-        if (existingAttendeeIndex !== -1) {
-          mealDay.attendees[existingAttendeeIndex].numberOfPeople = Math.min(
-            attendeeCount,
-            maxAttendeeCount,
-          );
-        } else {
-          mealDay.attendees.push({
-            user: userId,
-            numberOfPeople: Math.min(attendeeCount, maxAttendeeCount),
-          });
-        }
-      }
-
-      await mealDay.save();
+    if (!mealDay) {
+      return json({ error: "Meal day not found" }, { status: 404 });
     }
 
+    switch (actionType) {
+      case "attend":
+        handleAttend(mealDay, user._id);
+        break;
+
+      case "attendGuest":
+        await handleAttendGuest(mealDay, guestDiet, user._id);
+        break;
+
+      case "removeGuest":
+        // eslint-disable-next-line no-case-declarations
+        const guestRemoved = handleRemoveGuest(mealDay, guestDiet, user._id);
+        if (!guestRemoved) {
+          return json({ error: "Guest not found to remove" }, { status: 404 });
+        }
+        break;
+
+      case "removeAllGuests":
+        await handleRemoveAllGuests(mealDay, user._id);
+        break;
+
+      case "addMeal":
+        await handleAddMeal(mealDay, mealId, mealStart, mealEnd);
+        break;
+
+      default:
+        return json({ error: "Invalid action" }, { status: 400 });
+    }
+
+    await mealDay.save();
     return json({ success: true });
   } catch (error) {
     console.error(error);

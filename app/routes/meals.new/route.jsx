@@ -102,7 +102,7 @@ export default function CreateMeal() {
           >
             <SimpleHeader
               title="Add a new meal"
-              description="Create a new meal and add it to your Smask library"
+              description="Create a new meal and add it to your library, or use our AI features to generate it for you"
             />
           </motion.div>
         </AnimatePresence>

@@ -65,7 +65,7 @@ export default function DailyMealCard({ mealDays }) {
                     {format(new Date(meal?.endTime), "HH:mm")}
                   </Badge>
                 </div>
-                <p className="opacity-70 tracking-tight text-md line-clamp-2 mt-2">
+                <p className="opacity-70 tracking-tight text-md line-clamp-2">
                   {meal?.meal?.description}
                 </p>
               </Link>

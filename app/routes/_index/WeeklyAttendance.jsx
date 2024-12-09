@@ -7,7 +7,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import {
@@ -16,6 +16,7 @@ import {
   ChartTooltipContent,
 } from "~/components/ui/chart";
 import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 
 export default function AttendanceChart({ mealDays }) {
   const [view, setView] = useState("week");
@@ -87,9 +88,9 @@ export default function AttendanceChart({ mealDays }) {
   // Determine the icon and color
   const isPositive = difference > 0;
   const trendIcon = isPositive ? (
-    <TrendingUp className="text-green-500 h-5 w-5" />
+    <ArrowUp className="h-5 w-5 text-white" />
   ) : (
-    <TrendingDown className="text-red-500 h-5 w-5" />
+    <ArrowDown className="h-5 w-5 text-white" />
   );
   const trendColor = isPositive ? "text-green-500" : "text-red-500";
 
@@ -127,7 +128,14 @@ export default function AttendanceChart({ mealDays }) {
                 Since last {view}
               </p>
               <div className="flex gap-1">
-                {trendIcon}
+                <div
+                  className={cn(
+                    "flex items-center justify-center rounded-full h-6 w-6",
+                    isPositive ? "bg-green-400" : "bg-red-400",
+                  )}
+                >
+                  {trendIcon}
+                </div>
                 <span className={`font-base ${trendColor}`}>
                   {isPositive ? "+" : ""}
                   {difference}{" "}

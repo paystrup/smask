@@ -18,7 +18,15 @@ import {
   startOfMonth,
 } from "date-fns";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Columns3,
+  Loader2,
+  Rows3,
+  Table,
+  Wrench,
+} from "lucide-react";
 import { cn } from "~/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import CalendarGrid from "./CalendarGrid";
@@ -247,12 +255,14 @@ export default function CreateMealDays() {
           onClick={toggleView}
           aria-label={isMonthView ? "View week" : "View month"}
         >
+          {isMonthView ? <Columns3 /> : <Rows3 />}
           View {isMonthView ? "week" : "month"}
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
+              <Wrench className="h-4 w-4" />
               Attend {isMonthView ? "month" : "week"}
             </Button>
           </DropdownMenuTrigger>

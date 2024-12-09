@@ -4,7 +4,6 @@ import {
   isRouteErrorResponse,
   Form,
   Outlet,
-  Link,
   useActionData,
 } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
@@ -26,10 +25,11 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { authenticator } from "~/services/auth.server";
-import { MoveLeft, Pen, Trash } from "lucide-react";
+import { Pen, Trash } from "lucide-react";
 import { uploadImage } from "~/utils/server/uploadImage.server";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
 import EditMeal from "./EditMeal";
+import BackButton from "~/components/_foundation/navigation/BackButton";
 
 export async function loader({ request, params }) {
   const user = await authenticator.isAuthenticated(request, {
@@ -90,16 +90,13 @@ export default function MealDetailPage() {
 
   return (
     <Ribbon>
-      <div className="flex flex-col md:flex-row justify-between md:items-center mb-12">
-        <Link className="flex gap-2 mb-8" to="/meals/all">
-          <MoveLeft size={24} />
-          <p>Go back</p>
-        </Link>
+      <div className="flex w-full flex-col md:flex-row justify-between md:items-center mb-12">
+        <BackButton />
 
         {user.admin && (
           <div className="flex gap-2">
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
-              <DialogTrigger>
+              <DialogTrigger asChild>
                 <Button className="min-w-28 flex items-center justify-center gap-2">
                   <Pen className="h-4 w-4" />
                   Edit

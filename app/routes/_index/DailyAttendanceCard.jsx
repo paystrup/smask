@@ -133,7 +133,7 @@ export function DailyAttendanceCard({
         </Button>
 
         <Dialog>
-          <DialogTrigger>
+          <DialogTrigger asChild>
             <Button size="lg" className="w-full" variant="secondary">
               <User className="w-6 h-6" />
               Your guests ({userGuestsToday?.length || 0})

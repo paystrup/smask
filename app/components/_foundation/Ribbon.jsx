@@ -4,7 +4,7 @@ const Ribbon = ({ children, className }) => {
   return (
     <section
       className={cn(
-        "py-14 px-4 sm:px-6 lg:px-8 mx-auto w-full max-w-screen-contentWrapperXL",
+        "flex flex-col justify-center items-center py-14 px-4 sm:px-6 lg:px-8 mx-auto w-full max-w-screen-contentWrapperXL",
         className,
       )}
     >

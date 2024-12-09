@@ -1,18 +1,22 @@
-import { Form, useActionData } from "@remix-run/react";
-import { redirect, json } from "@remix-run/node";
+import { useFetcher } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
 import mongoose from "mongoose";
 import { AllergyType, Seasons } from "~/db/models";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Badge } from "~/components/ui/badge";
-import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import Ribbon from "~/components/_foundation/Ribbon";
-import { X } from "lucide-react";
-import { useState } from "react";
+import { Loader2, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { uploadImage } from "~/utils/server/uploadImage.server";
 import { authenticator } from "~/services/auth.server";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 import { Card, CardContent } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { openai } from "~/utils/server/openAi.server";
+import { createMealPrompt } from "~/utils/prompts/createMealPrompt";
+import { AnimatePresence, motion } from "motion/react";
+import { easeInOut } from "motion";
 
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
@@ -28,12 +32,22 @@ export async function loader({ request }) {
 }
 
 export default function CreateMeal() {
-  const actionData = useActionData();
+  const fetcher = useFetcher();
+  const [showGenerator, setShowGenerator] = useState(false);
   const [selectedAllergies, setSelectedAllergies] = useState([]);
   const [selectedSeasons, setSelectedSeasons] = useState([]);
+  const [generatedMeal, setGeneratedMeal] = useState(null);
   const [image, setImage] = useState(null);
+  const isSubmitting = fetcher.state === "submitting";
 
-  // Map through the enums to create options
+  useEffect(() => {
+    if (fetcher.data?.meal) {
+      setSelectedAllergies(fetcher.data.meal.allergies || []);
+      setSelectedSeasons(fetcher.data.meal.seasons || []);
+      setGeneratedMeal(fetcher.data.meal);
+    }
+  }, [fetcher.data]);
+
   const allergyOptions = Object.values(AllergyType).map((allergy) => ({
     label: allergy,
     value: allergy.toLowerCase(),
@@ -76,200 +90,304 @@ export default function CreateMeal() {
 
   return (
     <Ribbon>
-      <ContentWrapper>
-        <div className="flex flex-col items-center justify-center max-w-full overflow-hidden">
-          <SimpleHeader
-            title="Add a new meal"
-            description="Create a new meal and add it to your Smask library"
-          />
+      <div className="flex flex-col items-center justify-center max-w-3xl px-4 overflow-hidden">
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              ease: easeInOut,
+            }}
+          >
+            <SimpleHeader
+              title="Add a new meal"
+              description="Create a new meal and add it to your Smask library"
+            />
+          </motion.div>
+        </AnimatePresence>
 
-          <Card className="max-w-3xl pt-6">
-            <CardContent>
-              <Form
-                method="post"
-                encType="multipart/form-data"
-                className="flex flex-col gap-2"
-              >
-                <fieldset className="flex flex-col gap-4">
-                  <div>
-                    {/* Title Input */}
-                    <label htmlFor="title" className="mb-1 block">
-                      Title
+        {showGenerator ? (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: 0.3,
+                ease: easeInOut,
+              }}
+              className="w-full"
+            >
+              <fetcher.Form className="w-full mb-12" method="post">
+                <div className="w-full">
+                  <div className="flex justify-between items-center mb-2">
+                    <label htmlFor="mealPrompt" className="mb-1 block">
+                      What should the meal be inspired by?
                     </label>
+                    <Badge variant="primary" className="mb-2 text-xs">
+                      ✨ AI
+                    </Badge>
+                  </div>
+                  <div className="flex flex-col lg:flex-row gap-2">
                     <Input
                       type="text"
-                      name="title"
-                      id="title"
-                      placeholder="Title"
+                      name="mealPrompt"
+                      id="mealPrompt"
+                      maxLength={100}
+                      placeholder="Enter a prompt for meal inspiration"
                       defaultValue={""}
                       className={`border ${
-                        actionData?.errors?.title ? "border-red-500" : ""
+                        fetcher.data?.errors?.mealPrompt ? "border-red-500" : ""
                       }`}
                     />
-                    {actionData?.errors?.title && (
-                      <p className="mt-1 text-red-500">
-                        {actionData.errors.title}
-                      </p>
-                    )}
+                    <Button
+                      type="submit"
+                      name="action"
+                      value="generateMeal"
+                      aria-label="Generate meal"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      ) : (
+                        "Generate meal"
+                      )}
+                    </Button>
                   </div>
-
-                  <div>
-                    {/* Description Input */}
-                    <label htmlFor="description" className="mb-1 block">
-                      Description
-                    </label>
-                    <Textarea
-                      name="description"
-                      id="description"
-                      placeholder="Description"
-                      defaultValue={""}
-                      className={`border ${
-                        actionData?.errors?.description ? "border-red-500" : ""
-                      }`}
-                    />
-                    {actionData?.errors?.description && (
-                      <p className="mt-1 text-red-500">
-                        {actionData.errors.description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    {/* Tags Input */}
-                    <label htmlFor="tags" className="mb-1 block">
-                      Tags (comma-separated)
-                    </label>
-                    <Input
-                      type="text"
-                      name="tags"
-                      id="tags"
-                      placeholder="e.g. spicy,vegan"
-                      defaultValue={""}
-                      className={`border ${
-                        actionData?.errors?.tags ? "border-red-500" : ""
-                      }`}
-                    />
-                    {actionData?.errors?.tags && (
-                      <p className="mt-1 text-red-500">
-                        {actionData.errors.tags}
-                      </p>
-                    )}
-                  </div>
-                </fieldset>
-
-                {/* Allergy Badges */}
-                <fieldset className="mt-8">
-                  <legend className="mb-2 block">Allergies</legend>
-                  <div className="flex flex-wrap gap-2">
-                    {allergyOptions.map((allergy) => (
-                      <Badge
-                        key={allergy.value}
-                        variant={
-                          selectedAllergies.includes(allergy.value)
-                            ? "default"
-                            : "outline"
-                        }
-                        className="cursor-pointer w-fit"
-                        onClick={() => handleAllergyToggle(allergy.value)}
-                      >
-                        <Input
-                          type="checkbox"
-                          name="allergies"
-                          value={allergy.value}
-                          checked={selectedAllergies.includes(allergy.value)}
-                          onChange={() => {}}
-                          className="sr-only w-fit"
-                        />
-                        {allergy.label}
-                        {selectedAllergies.includes(allergy.value) && (
-                          <X className="ml-1 h-3 w-3" />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                </fieldset>
-                {actionData?.errors?.allergies && (
-                  <p className="mt-1 text-red-500">
-                    {actionData.errors.allergies}
-                  </p>
-                )}
-
-                {/* Season Badges */}
-                <fieldset className="mt-8">
-                  <legend className="mb-2 block">Seasons</legend>
-                  <div className="flex flex-wrap gap-2">
-                    {seasonOptions.map((season) => (
-                      <Badge
-                        key={season.value}
-                        variant={
-                          selectedSeasons.includes(season.value)
-                            ? "default"
-                            : "outline"
-                        }
-                        className="cursor-pointer w-fit"
-                        onClick={() => handleSeasonToggle(season.value)}
-                      >
-                        <Input
-                          type="checkbox"
-                          name="seasons"
-                          value={season.value}
-                          checked={selectedSeasons.includes(season.value)}
-                          onChange={() => {}}
-                          className="sr-only w-fit"
-                        />
-                        {season.label}
-                        {selectedSeasons.includes(season.value) && (
-                          <X className="ml-1 h-3 w-3" />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                </fieldset>
-                {actionData?.errors?.seasons && (
-                  <p className="mt-1 text-red-500">
-                    {actionData.errors.seasons}
-                  </p>
-                )}
-
-                <div className="mt-6 flex flex-col gap-2">
-                  {/* Image Upload */}
-                  <label htmlFor="image" className="mb-1 block">
-                    Upload Image
-                  </label>
-                  <Input
-                    type="file"
-                    name="image"
-                    id="image"
-                    onChange={handleImageChange}
-                  />
-                  <div className="flex w-full items-center justify-center">
-                    {image && (
-                      <img
-                        src={image}
-                        alt="Selected"
-                        className="mt-4 h-48 w-48 object-cover rounded-lg"
-                      />
-                    )}
-                  </div>
-                  {actionData?.errors?.image && (
-                    <p className="mt-1 text-red-500">
-                      {actionData.errors.image}
+                  {fetcher.data?.errors?.mealPrompt && (
+                    <p className="mt-1 text-red-500 text-sm">
+                      {fetcher.data.errors.mealPrompt}
                     </p>
                   )}
                 </div>
+              </fetcher.Form>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              ease: "easeInOut",
+            }}
+            className="w-full flex items-center justify-center"
+          >
+            <Button onClick={() => setShowGenerator(true)} className="mb-12">
+              ✨ Generate meal with AI
+            </Button>
+          </motion.div>
+        )}
 
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  className="mt-3 rounded bg-blue-600 p-2 text-white transition-colors hover:bg-blue-700"
-                >
-                  Save
-                </button>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-      </ContentWrapper>
+        {generatedMeal && (
+          <div className="w-full flex items-center justify-center">
+            <p className="mb-4 text-center text-lg tracking-tight">
+              🪄 Generated meal
+            </p>
+          </div>
+        )}
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 19 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              ease: easeInOut,
+            }}
+          >
+            {isSubmitting ? (
+              <div className="w-full flex items-center justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+              </div>
+            ) : (
+              <Card className="max-w-3xl pt-6">
+                <CardContent>
+                  <fetcher.Form
+                    method="post"
+                    encType="multipart/form-data"
+                    className="flex flex-col gap-2"
+                  >
+                    <fieldset className="flex flex-col gap-4">
+                      <div>
+                        <label htmlFor="title" className="mb-1 block">
+                          Title
+                        </label>
+                        <Input
+                          type="text"
+                          name="title"
+                          id="title"
+                          placeholder="Title"
+                          defaultValue={generatedMeal?.title || ""}
+                          className={`border ${
+                            fetcher.data?.errors?.title ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fetcher.data?.errors?.title && (
+                          <p className="mt-1 text-red-500 text-sm">
+                            {fetcher.data.errors.title}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="description" className="mb-1 block">
+                          Description
+                        </label>
+                        <Textarea
+                          name="description"
+                          id="description"
+                          placeholder="Description"
+                          defaultValue={generatedMeal?.description || ""}
+                          className={`border ${
+                            fetcher.data?.errors?.description
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                        />
+                        {fetcher.data?.errors?.description && (
+                          <p className="mt-1 text-red-500 text-sm">
+                            {fetcher.data.errors.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="tags" className="mb-1 block">
+                          Tags (comma-separated)
+                        </label>
+                        <Input
+                          type="text"
+                          name="tags"
+                          id="tags"
+                          placeholder="e.g. spicy,vegan"
+                          defaultValue={generatedMeal?.tags.join(", ") || ""}
+                          className={`border ${
+                            fetcher.data?.errors?.tags ? "border-red-500" : ""
+                          }`}
+                        />
+                        {fetcher.data?.errors?.tags && (
+                          <p className="mt-1 text-red-500 text-sm">
+                            {fetcher.data.errors.tags}
+                          </p>
+                        )}
+                      </div>
+                    </fieldset>
+
+                    <fieldset className="mt-8">
+                      <legend className="mb-2 block">Allergies</legend>
+                      <div className="flex flex-wrap gap-2">
+                        {allergyOptions.map((allergy) => (
+                          <Badge
+                            key={allergy.value}
+                            variant={
+                              selectedAllergies.includes(allergy.value)
+                                ? "default"
+                                : "outline"
+                            }
+                            className="cursor-pointer w-fit"
+                            onClick={() => handleAllergyToggle(allergy.value)}
+                          >
+                            <Input
+                              type="checkbox"
+                              name="allergies"
+                              value={allergy.value}
+                              checked={selectedAllergies.includes(
+                                allergy.value,
+                              )}
+                              onChange={() => {}}
+                              className="sr-only w-fit"
+                            />
+                            {allergy.label}
+                            {selectedAllergies.includes(allergy.value) && (
+                              <X className="ml-1 h-3 w-3" />
+                            )}
+                          </Badge>
+                        ))}
+                      </div>
+                    </fieldset>
+                    {fetcher.data?.errors?.allergies && (
+                      <p className="mt-1 text-red-500 text-sm">
+                        {fetcher.data.errors.allergies}
+                      </p>
+                    )}
+
+                    <fieldset className="mt-8">
+                      <legend className="mb-2 block">Seasons</legend>
+                      <div className="flex flex-wrap gap-2">
+                        {seasonOptions.map((season) => (
+                          <Badge
+                            key={season.value}
+                            variant={
+                              selectedSeasons.includes(season.value)
+                                ? "default"
+                                : "outline"
+                            }
+                            className="cursor-pointer w-fit"
+                            onClick={() => handleSeasonToggle(season.value)}
+                          >
+                            <Input
+                              type="checkbox"
+                              name="seasons"
+                              value={season.value}
+                              checked={selectedSeasons.includes(season.value)}
+                              onChange={() => {}}
+                              className="sr-only w-fit"
+                            />
+                            {season.label}
+                            {selectedSeasons.includes(season.value) && (
+                              <X className="ml-1 h-3 w-3" />
+                            )}
+                          </Badge>
+                        ))}
+                      </div>
+                    </fieldset>
+                    {fetcher.data?.errors?.seasons && (
+                      <p className="mt-1 text-red-500">
+                        {fetcher.data.errors.seasons}
+                      </p>
+                    )}
+
+                    <div className="mt-6 flex flex-col gap-2">
+                      <label htmlFor="image" className="mb-1 block">
+                        Upload Image
+                      </label>
+                      <Input
+                        type="file"
+                        name="image"
+                        id="image"
+                        onChange={handleImageChange}
+                      />
+                      <div className="flex w-full items-center justify-center">
+                        {image && (
+                          <img
+                            src={image}
+                            alt="Selected"
+                            className="mt-4 h-48 w-48 object-cover rounded-lg"
+                          />
+                        )}
+                      </div>
+                      {fetcher.data?.errors?.image && (
+                        <p className="mt-1 text-red-500 text-sm">
+                          {fetcher.data.errors.image}
+                        </p>
+                      )}
+                    </div>
+
+                    <Button
+                      type="submit"
+                      name="action"
+                      value="saveMeal"
+                      disabled={isSubmitting}
+                    >
+                      Add meal
+                    </Button>
+                  </fetcher.Form>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </Ribbon>
   );
 }
@@ -278,63 +396,93 @@ export async function action({ request }) {
   const form = await request.formData();
   const { title, description, tags } = Object.fromEntries(form);
 
-  const allergies = form.getAll("allergies"); // Get all selected allergies
-  const seasons = form.getAll("seasons"); // Get all selected seasons
+  const allergies = form.getAll("allergies");
+  const seasons = form.getAll("seasons");
+  const mealPrompt = form.get("mealPrompt");
+  const action = form.get("action");
 
-  // Parse the comma-separated tags string into an array and trim whitespace
-  const tagArray = tags
-    ? tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean)
-    : [];
+  if (action === "generateMeal") {
+    if (!mealPrompt) {
+      return json(
+        { errors: { mealPrompt: "Please enter a meal prompt" } },
+        { status: 400 },
+      );
+    }
 
-  const tagIds = await Promise.all(
-    tagArray.map(async (tagName) => {
-      // Try to find the tag by name
-      let tag = await mongoose.models.Tag.findOne({ name: tagName });
+    if (mealPrompt.length > 100) {
+      return json(
+        {
+          errors: {
+            mealPrompt: "Meal prompt must be less than 100 characters",
+          },
+        },
+        { status: 400 },
+      );
+    }
 
-      // If the tag doesn't exist, create it
-      if (!tag) {
-        tag = new mongoose.models.Tag({ name: tagName });
-        await tag.save();
-      }
+    try {
+      const chatGptResponse = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: createMealPrompt(mealPrompt) }],
+      });
 
-      // Return the ObjectId of the tag
-      return tag._id;
-    }),
-  );
+      const mealData = chatGptResponse.choices[0].message.content.trim();
+      const formattedMeal = await JSON.parse(mealData);
 
-  // Handle image upload
-  const image = form.get("image");
-  let imageUrl = null;
-  if (image && image.size > 0) {
-    imageUrl = await uploadImage(image); // Assuming uploadImage returns the URL or path of the uploaded image
+      return json({ meal: formattedMeal });
+    } catch (error) {
+      console.error(error);
+      return json({ error: "Error generating meal data." }, { status: 500 });
+    }
   }
 
-  try {
-    const newMeal = new mongoose.models.Meal({
-      title: title,
-      description: description,
-      allergies: allergies,
-      seasons: seasons,
-      tags: tagIds, // Store tag ObjectIds in the Meal
-      image: imageUrl || undefined,
-    });
-    await newMeal.save();
-    return redirect(`/meals/${newMeal._id}`);
-  } catch (error) {
-    console.log(error);
-    // Extract error messages from the Mongoose error object
-    const errors = {};
-    if (error.errors) {
-      Object.keys(error.errors).forEach((key) => {
-        errors[key] = error.errors[key].message; // Get the message for each error field
-      });
-    }
-    return json(
-      { errors: errors, values: Object.fromEntries(form) },
-      { status: 400 },
+  if (action === "saveMeal") {
+    const tagArray = tags
+      ? tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+      : [];
+
+    const tagIds = await Promise.all(
+      tagArray.map(async (tagName) => {
+        let tag = await mongoose.models.Tag.findOne({ name: tagName });
+
+        if (!tag) {
+          tag = new mongoose.models.Tag({ name: tagName });
+          await tag.save();
+        }
+
+        return tag._id;
+      }),
     );
+
+    const image = form.get("image");
+    let imageUrl = null;
+    if (image && image.size > 0) {
+      imageUrl = await uploadImage(image);
+    }
+
+    try {
+      const newMeal = new mongoose.models.Meal({
+        title: title,
+        description: description,
+        allergies: allergies,
+        seasons: seasons,
+        tags: tagIds,
+        image: imageUrl || undefined,
+      });
+      await newMeal.save();
+      return redirect(`/meals/${newMeal._id}`);
+    } catch (error) {
+      console.log(error);
+      const errors = {};
+      if (error.errors) {
+        Object.keys(error.errors).forEach((key) => {
+          errors[key] = error.errors[key].message;
+        });
+      }
+      return json({ errors: errors }, { status: 400 });
+    }
   }
 }

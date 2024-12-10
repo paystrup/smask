@@ -26,7 +26,7 @@ export default function DailyMealCard({ mealDays }) {
   const dateString = format(displayDate, "EEE, MMM d");
 
   return (
-    <Card className="p-6 h-full flex flex-col justify-between border-0 bg-primary-blue text-white relative">
+    <Card className="p-6 h-full flex flex-col gap-12 justify-between border-0 bg-primary-blue text-white relative">
       <CardTitle className="flex flex-col">
         <div className="flex justify-between items-center">
           <h3 className="text-2xl font-semibold tracking-tighter">

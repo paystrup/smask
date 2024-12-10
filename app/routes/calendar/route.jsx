@@ -24,7 +24,6 @@ import {
   Columns3,
   Loader2,
   Rows3,
-  Table,
   Wrench,
 } from "lucide-react";
 import { cn } from "~/lib/utils";

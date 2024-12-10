@@ -132,7 +132,6 @@ export default function CalendarGrid({
                 <div className="flex gap-2 flex-wrap opacity-80 text-black">
                   {(veganCount || vegetarianCount || pescetarianCount) && (
                     <p className="w-fit text-xs">
-                      (
                       {[
                         veganCount &&
                           `${veganCount} Vegan${veganCount > 1 ? "s" : ""}`,
@@ -143,7 +142,6 @@ export default function CalendarGrid({
                       ]
                         .filter(Boolean)
                         .join(", ")}
-                      )
                     </p>
                   )}
                 </div>
@@ -193,7 +191,7 @@ export default function CalendarGrid({
                               )
                             }
                           >
-                            Delete
+                            Remove
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -225,7 +223,8 @@ export default function CalendarGrid({
             />
           )}
 
-          {user && !isMonthView && (
+          {/* Dont show attend button if user is admin */}
+          {user && !user.admin && !isMonthView && (
             <Button
               size="lg"
               onClick={() => handleUserAttend(formattedDate)}

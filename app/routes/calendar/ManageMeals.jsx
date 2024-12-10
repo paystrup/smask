@@ -150,16 +150,28 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
                     onClick={() => setSelectedMeal(meal)}
                     key={meal?._id}
                   >
-                    <div>
-                      <p className="font-semibold line-clamp-2">
-                        {meal?.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {meal?.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(meal?.createdAt).toLocaleDateString()}
-                      </p>
+                    <div className="flex gap-2">
+                      {meal?.image && (
+                        <div className="h-24 w-24 flex items-center justify-center overflow-hidden rounded-lg">
+                          <img
+                            src={meal.image}
+                            alt={meal.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="font-semibold line-clamp-2">
+                          {meal?.title}
+                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {meal?.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(meal?.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 ))}

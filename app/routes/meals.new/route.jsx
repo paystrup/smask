@@ -38,13 +38,21 @@ export default function CreateMeal() {
   const [selectedSeasons, setSelectedSeasons] = useState([]);
   const [generatedMeal, setGeneratedMeal] = useState(null);
   const [image, setImage] = useState(null);
-  const isSubmitting = fetcher.state === "submitting";
+  const [formKey, setFormKey] = useState(0);
+  const isGenerating =
+    fetcher.state === "submitting" &&
+    fetcher.formData?.get("action") === "generateMeal";
+  const isSaving =
+    fetcher.state === "submitting" &&
+    fetcher.formData?.get("action") === "saveMeal";
 
   useEffect(() => {
     if (fetcher.data?.meal) {
       setSelectedAllergies(fetcher.data.meal.allergies || []);
       setSelectedSeasons(fetcher.data.meal.seasons || []);
       setGeneratedMeal(fetcher.data.meal);
+      // Force re-render of the form
+      setFormKey((prevKey) => prevKey + 1);
     }
   }, [fetcher.data]);
 
@@ -90,7 +98,7 @@ export default function CreateMeal() {
 
   return (
     <Ribbon>
-      <div className="flex flex-col items-center justify-center max-w-3xl px-4 overflow-hidden">
+      <div className="flex flex-col items-center justify-center max-w-3xl w-full px-4 overflow-hidden">
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -145,9 +153,9 @@ export default function CreateMeal() {
                       name="action"
                       value="generateMeal"
                       aria-label="Generate meal"
-                      disabled={isSubmitting}
+                      disabled={isGenerating}
                     >
-                      {isSubmitting ? (
+                      {isGenerating ? (
                         <Loader2 className="animate-spin h-4 w-4" />
                       ) : (
                         "Generate meal"
@@ -179,7 +187,7 @@ export default function CreateMeal() {
           </motion.div>
         )}
 
-        {generatedMeal && (
+        {generatedMeal && !isGenerating && (
           <div className="w-full flex items-center justify-center">
             <p className="mb-4 text-center text-lg tracking-tight">
               🪄 Generated meal
@@ -195,12 +203,15 @@ export default function CreateMeal() {
               ease: easeInOut,
             }}
           >
-            {isSubmitting ? (
-              <div className="w-full flex items-center justify-center">
+            {isGenerating ? (
+              <div className="w-full flex flex-col gap-4 items-center justify-center my-12">
                 <Loader2 className="h-10 w-10 animate-spin" />
+                <p className="text-base opacity-70 text-black text-center max-w-[20ch] animate-pulse">
+                  Please wait while we are cooking your meal 🪄🔥
+                </p>
               </div>
             ) : (
-              <Card className="max-w-3xl pt-6">
+              <Card className="max-w-3xl pt-6" key={formKey}>
                 <CardContent>
                   <fetcher.Form
                     method="post"
@@ -260,7 +271,7 @@ export default function CreateMeal() {
                           name="tags"
                           id="tags"
                           placeholder="e.g. spicy,vegan"
-                          defaultValue={generatedMeal?.tags.join(", ") || ""}
+                          defaultValue={generatedMeal?.tags?.join(", ") || ""}
                           className={`border ${
                             fetcher.data?.errors?.tags ? "border-red-500" : ""
                           }`}
@@ -377,9 +388,13 @@ export default function CreateMeal() {
                       type="submit"
                       name="action"
                       value="saveMeal"
-                      disabled={isSubmitting}
+                      disabled={isSaving}
                     >
-                      Add meal
+                      {isSaving ? (
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      ) : (
+                        "Add meal"
+                      )}
                     </Button>
                   </fetcher.Form>
                 </CardContent>
@@ -422,14 +437,14 @@ export async function action({ request }) {
 
     try {
       const chatGptResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [{ role: "user", content: createMealPrompt(mealPrompt) }],
       });
 
       const mealData = chatGptResponse.choices[0].message.content.trim();
-      const formattedMeal = await JSON.parse(mealData);
+      const formattedMeal = JSON.parse(mealData);
 
-      return json({ meal: formattedMeal });
+      return json({ meal: formattedMeal, generated: true });
     } catch (error) {
       console.error(error);
       return json({ error: "Error generating meal data." }, { status: 500 });
@@ -475,7 +490,7 @@ export async function action({ request }) {
       await newMeal.save();
       return redirect(`/meals/${newMeal._id}`);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       const errors = {};
       if (error.errors) {
         Object.keys(error.errors).forEach((key) => {
@@ -485,4 +500,6 @@ export async function action({ request }) {
       return json({ errors: errors }, { status: 400 });
     }
   }
+
+  return json({ error: "Invalid action" }, { status: 400 });
 }

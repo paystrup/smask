@@ -143,14 +143,7 @@ export function AppSidebar() {
                       {adminItems.map((item) => (
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton asChild>
-                            <NavLink
-                              to={item.url}
-                              style={({ isActive }) => {
-                                return {
-                                  fontWeight: isActive ? "bold" : "",
-                                };
-                              }}
-                            >
+                            <NavLink to={item.url}>
                               <item.icon />
                               <p>{item.title}</p>
                             </NavLink>
@@ -163,14 +156,7 @@ export function AppSidebar() {
                       {items.map((item) => (
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton asChild>
-                            <NavLink
-                              to={item.url}
-                              style={({ isActive }) => {
-                                return {
-                                  fontWeight: isActive ? "bold" : "",
-                                };
-                              }}
-                            >
+                            <NavLink to={item.url}>
                               <item.icon />
                               <p>{item.title}</p>
                             </NavLink>
@@ -189,14 +175,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <NavLink
-                        to="/users"
-                        style={({ isActive }) => {
-                          return {
-                            fontWeight: isActive ? "bold" : "",
-                          };
-                        }}
-                      >
+                      <NavLink to="/users">
                         <Users />
                         <p>Users</p>
                       </NavLink>
@@ -268,12 +247,16 @@ export function AppSidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     {userItems.map((item) => (
-                      <Link to={item.url} key={item.title} className="w-full">
+                      <NavLink
+                        to={item.url}
+                        key={item.title}
+                        className="w-full"
+                      >
                         <DropdownMenuItem className="flex items-center gap-2 w-full cursor-pointer">
                           <item.icon />
                           {item.title}
                         </DropdownMenuItem>
-                      </Link>
+                      </NavLink>
                     ))}
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
@@ -301,10 +284,10 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/login" className="flex items-center gap-2">
+                  <NavLink to="/login" className="flex items-center gap-2">
                     <LogIn />
                     Login
-                  </Link>
+                  </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarGroupContent>

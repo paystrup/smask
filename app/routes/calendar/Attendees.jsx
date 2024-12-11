@@ -32,11 +32,11 @@ export default function Attendees({ mealDay, maxAvatars }) {
                     alt={`${attendee?.firstName || "Guest"} ${
                       attendee?.lastName || ""
                     }`}
-                    className="h-8 w-8 border rounded-full object-cover"
+                    className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (
                   <Avatar
-                    className="border text-xs"
+                    className="text-xs "
                     name={attendee?.firstName || "?"}
                   />
                 )}
@@ -52,7 +52,7 @@ export default function Attendees({ mealDay, maxAvatars }) {
             },
             (_, index) => (
               <li key={`placeholder-${index}`} className="-me-4">
-                <Avatar name="?" />
+                <Avatar className="bg-neutral-50 text-black" name="?" />
               </li>
             ),
           )}

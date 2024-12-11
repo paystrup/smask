@@ -438,7 +438,17 @@ export async function action({ request }) {
     try {
       const chatGptResponse = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: createMealPrompt(mealPrompt) }],
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a helpful professional chef working on a new menu for your restaurant",
+          },
+          {
+            role: "user",
+            content: createMealPrompt(mealPrompt),
+          },
+        ],
       });
 
       const mealData = chatGptResponse.choices[0].message.content.trim();

@@ -1,12 +1,14 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import validateURL from "~/utils/server/schemaValidation";
+import {
+  mealDescriptionMaxLength,
+  mealDescriptionMinLength,
+  mealTitleMaxLength,
+  mealTitleMinLength,
+} from "./constants";
 
 const { Schema } = mongoose;
-
-//
-// ENUMS
-//
 
 // Expanded Enum for predefined ingredient categories
 export const IngredientCategory = {
@@ -68,9 +70,7 @@ export const Diets = {
   PESCETARIAN: "pescetarian",
 };
 
-//
 // SCHEMAS
-//
 const tagSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -170,14 +170,14 @@ const mealSchema = new Schema(
     title: {
       type: String,
       required: true,
-      minLength: [3, "Meal title is too short"],
-      maxLength: [100, "Meal title is too long"],
+      minLength: [mealTitleMinLength, "Meal title is too short"],
+      maxLength: [mealTitleMaxLength, "Meal title is too long"],
     },
     description: {
       type: String,
       required: true,
-      minLength: [10, "Description is too short"],
-      maxLength: [300, "Description is too long"],
+      minLength: [mealDescriptionMinLength, "Description is too short"],
+      maxLength: [mealDescriptionMaxLength, "Description is too long"],
     },
     ingredients: [
       {

@@ -164,7 +164,7 @@ export default function Index() {
   const todayOrNextWorkday = isEndOfWeek ? "next workday" : "today";
 
   return (
-    <section className="flex flex-col lg:h-[100svh] p-2 md:px-4 lg:p-8 pt-14">
+    <section className="flex flex-col lg:h-[100svh] p-2 md:px-4 lg:px-8 pt-14">
       <div className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12">
         <div className="flex gap-2">
           <UserGreeting userData={userData} isAdmin={isAdmin} />

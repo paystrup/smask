@@ -130,6 +130,7 @@ export function DailyAttendanceCard({
         >
           {isSubmitting && <Loader2 className="animate-spin" />}
           {isUserAttending ? <Minus /> : <Plus />}
+          {isUserAttending ? "Don't attend" : "Attend"}
         </Button>
 
         <Dialog>

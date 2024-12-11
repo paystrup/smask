@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Attendees from "./Attendees";
 import AddGuestsDialog from "./AddGuestsDialog";
@@ -85,6 +85,7 @@ export default function CalendarGrid({
               className={cn(
                 "rounded-xl h-full w-full transition-colors duration-200 ease-in-out",
                 isUserAttending ? "bg-green-400 text-white" : "bg-neutral-300",
+                isToday(day) && "bg-neutral-50",
               )}
             ></div>
           </div>
@@ -243,7 +244,7 @@ export default function CalendarGrid({
               ) : (
                 <Plus className="h-8 w-8" />
               )}
-              {/* {isUserAttending ? "Don't attend today" : "Attend"} */}
+              {isUserAttending ? "Don't attend" : "Attend"}
             </Button>
           )}
 

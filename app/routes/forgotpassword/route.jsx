@@ -15,9 +15,19 @@ import { generateResetToken } from "~/utils/server/handleTokens.server";
 import { sendResetLink } from "~/utils/server/nodeMailer.server";
 import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 
-export function meta() {
-  return [{ title: "smask | Forgot Password" }];
-}
+export const meta = () => {
+  return [
+    { title: "SMASK | Forgot Password" },
+    {
+      property: "og:title",
+      content: "SMASK | Forgot Password",
+    },
+    {
+      name: "description",
+      content: "Reset your password quickly and securely with SMASK. Enter your email to receive a reset link and regain access to your account.",
+    },
+  ];
+};
 
 export default function ForgotPassword() {
   const actionData = useActionData();

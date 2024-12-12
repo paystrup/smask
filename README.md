@@ -14,7 +14,7 @@ npx create-remix@latest --template bewildergeist/remix-mongoose-stack
 
 ## Getting started
 
-1. Rename `.env.example` to `.env` and add your MongoDB connection string as the `MONGODB_URL` variable
+1. Rename `.env.example` to `.env` and add your MongoDB connection string as the `MONGODB_URI` variable
 2. [Initialize a new repository][vs-code-git-init] in this directory and push it to GitHub
 
 ## Development

@@ -14,6 +14,20 @@ export async function loader({ request }) {
   return json({ userData });
 }
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Profile" },
+    {
+      property: "og:title",
+      content: "SMASK | Profile",
+    },
+    {
+      name: "description",
+      content: "Your Smask profile page displaying your avatar, name, latest attendance, favorite dish and much more...",
+    },
+  ];
+};
+
 export default function ProfilePage() {
   const { userData } = useLoaderData();
 

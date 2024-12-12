@@ -18,6 +18,20 @@ import { createMealPrompt } from "~/utils/prompts/createMealPrompt";
 import { AnimatePresence, motion } from "motion/react";
 import { easeInOut } from "motion";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Add new meal" },
+    {
+      property: "og:title",
+      content: "SMASK | Add new meal",
+    },
+    {
+      name: "description",
+      content: "Add a new meal or generate one with AI for your SMASK library.",
+    },
+  ];
+};
+
 // This is the maximum length of the string that the user can input for the meal prompt
 const generatorStringMaxLength = 100;
 

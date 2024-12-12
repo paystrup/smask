@@ -18,9 +18,19 @@ import MealCard from "~/components/_feature/cards/MealCard";
 import { cn } from "~/lib/utils";
 import { authenticator } from "~/services/auth.server";
 
-export function meta() {
-  return [{ title: "SMASK | All meals" }];
-}
+export const meta = () => {
+  return [
+    { title: "SMASK | All meals" },
+    {
+      property: "og:title",
+      content: "SMASK | All meals",
+    },
+    {
+      name: "description",
+      content: "Browse and search for delicious meals in your SMASK library.",
+    },
+  ];
+};
 
 // Reference: https://www.mongodb.com/docs/manual/reference/operator/query/text/
 // TODO: Add limit to query

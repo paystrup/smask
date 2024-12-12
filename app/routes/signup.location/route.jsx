@@ -17,6 +17,20 @@ import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 import backgroundImage from "~/assets/img/signup-background.jpg";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Sign Up" },
+    {
+      property: "og:title",
+      content: "SMASK | Sign Up",
+    },
+    {
+      name: "description",
+      content: "Sign up for Smask",
+    },
+  ];
+};
+
 export async function loader({ request }) {
   await authenticator.isAuthenticated(request, {
     successRedirect: "/",

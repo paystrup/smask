@@ -15,6 +15,20 @@ import { Input } from "~/components/ui/input";
 import { validateResetToken } from "~/utils/server/handleTokens.server";
 import { sendConfirmPasswordReset } from "~/utils/server/nodeMailer.server";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Reset Password" },
+    {
+      property: "og:title",
+      content: "SMASK | Reset Password",
+    },
+    {
+      name: "description",
+      content: "Did you forget your password? You can reset it here.",
+    },
+  ];
+};
+
 export async function loader({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");

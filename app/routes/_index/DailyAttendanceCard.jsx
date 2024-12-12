@@ -33,6 +33,7 @@ export function DailyAttendanceCard({
   isSubmitting,
   onGuestSubmit,
   userGuestsToday,
+  isAdmin,
 }) {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -118,19 +119,24 @@ export function DailyAttendanceCard({
       </div>
 
       <CardContent className="flex flex-col gap-2 mt-8 p-0 z-[4]">
-        <Button
-          onClick={onSubmit}
-          size="lg"
-          className={cn(
-            isUserAttending ? "bg-red-500" : "bg-green-500 hover:bg-green-600",
-          )}
-          variant={isUserAttending ? "destructive" : "default"}
-          disabled={isSubmitting}
-          aria-label={isUserAttending ? "Don't attend today" : "Attend"}
-        >
-          {isSubmitting && <Loader2 className="animate-spin" />}
-          {isUserAttending ? <Minus /> : <Plus />}
-        </Button>
+        {!isAdmin && (
+          <Button
+            onClick={onSubmit}
+            size="lg"
+            className={cn(
+              isUserAttending
+                ? "bg-red-500"
+                : "bg-green-500 hover:bg-green-600",
+            )}
+            variant={isUserAttending ? "destructive" : "default"}
+            disabled={isSubmitting}
+            aria-label={isUserAttending ? "Don't attend today" : "Attend"}
+          >
+            {isSubmitting && <Loader2 className="animate-spin" />}
+            {isUserAttending ? <Minus /> : <Plus />}
+            {isUserAttending ? "Don't attend" : "Attend"}
+          </Button>
+        )}
 
         <Dialog>
           <DialogTrigger asChild>

@@ -2,7 +2,6 @@ import { json } from "@remix-run/node";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { DailyAttendanceCard } from "./DailyAttendanceCard";
 import WeeklyAttendance from "./WeeklyAttendance";
 import DailyMealCard from "./DailyMealCard";
@@ -11,6 +10,7 @@ import { addDays } from "date-fns";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Announcements from "./Announcements";
 import { Badge } from "~/components/ui/badge";
+import UserGreeting from "./UserGreeting";
 
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
@@ -164,21 +164,10 @@ export default function Index() {
   const todayOrNextWorkday = isEndOfWeek ? "next workday" : "today";
 
   return (
-    <section className="flex flex-col h-[100svh] p-8 pt-14">
-      <div className="flex items-start justify-between w-full mb-12">
+    <section className="flex flex-col lg:h-[100svh] p-2 md:px-4 lg:px-8 pt-14">
+      <div className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12">
         <div className="flex gap-2">
-          <div className="relative">
-            {isAdmin && (
-              <div className="h-5 w-5 text-center rounded-full bg-neutral-100 shadow-2xl flex items-center justify-center absolute left-0 top-0 z-50">
-                <p className="text-xs">✨</p>
-              </div>
-            )}
-
-            <Avatar className="w-14 h-14 ">
-              <AvatarImage src={userData?.image} />
-              <AvatarFallback>{userData?.firstName}</AvatarFallback>
-            </Avatar>
-          </div>
+          <UserGreeting userData={userData} isAdmin={isAdmin} />
 
           <div className="flex flex-col justify-between">
             <h1 className="text-2xl font-medium tracking-tighter">
@@ -192,8 +181,8 @@ export default function Index() {
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <h2 className="text-2xl tracking-tighter font-medium">
+        <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
+          <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
             {todayFormatted}
           </h2>
           <Badge className="text-xs bg-primary-blue text-white">
@@ -203,12 +192,12 @@ export default function Index() {
       </div>
 
       <div className="grid grid-cols-12 gap-4 flex-grow overflow-hidden">
-        <div className="col-span-5 flex flex-col gap-4 overflow-auto">
+        <div className="col-span-12 lg:col-span-5 flex flex-col gap-4">
           <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
           <WeeklyAttendance mealDays={mealDays} />
         </div>
 
-        <div className="col-span-3 overflow-auto">
+        <div className="col-span-12 lg:col-span-3">
           <DailyAttendanceCard
             mealDays={mealDays}
             isUserAttending={isUserAttending}
@@ -216,6 +205,7 @@ export default function Index() {
             onSubmit={() =>
               handleUserAttend(relevantMealday?.date || formattedDate)
             }
+            isAdmin={isAdmin}
             onGuestSubmit={(diet, action) =>
               handleGuestAttend(
                 relevantMealday?.date || formattedDate,
@@ -227,11 +217,11 @@ export default function Index() {
           />
         </div>
 
-        <div className="col-span-4 overflow-auto grid grid-rows-8 gap-4">
-          <div className="row-span-3">
+        <div className="col-span-12 lg:col-span-4 lg:grid lg:grid-rows-8 gap-4">
+          <div className="lg:row-span-3">
             <Announcements />
           </div>
-          <div className="row-span-5">
+          <div className="lg:row-span-5">
             <WeeklyBirthdays users={allUsersInWorkspace} />
           </div>
         </div>

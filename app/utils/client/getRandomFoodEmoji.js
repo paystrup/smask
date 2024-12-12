@@ -1,7 +1,7 @@
 export const getRandomFoodEmoji = () => {
   const foodEmojis = [
     "🍕",
-    "🍔",
+    "🍽️",
     "🍟",
     "🌭",
     "🍿",

@@ -232,7 +232,7 @@ export default function ManageAccount() {
 
           <CardContent>
             <AlertDialog open={open} onOpenChange={setOpen}>
-              <AlertDialogTrigger>
+              <AlertDialogTrigger asChild>
                 <Button variant="destructive">Delete Account</Button>
               </AlertDialogTrigger>
               <AlertDialogContent aria-label="Permanently delete your account">

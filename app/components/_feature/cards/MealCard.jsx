@@ -2,6 +2,11 @@ import { Link } from "@remix-run/react";
 import { format } from "date-fns";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 
 const heightMap = {
@@ -41,7 +46,7 @@ export default function MealCard({
               />
             ) : (
               <div className="flex items-center justify-center text-5xl bg-neutral-50 h-full w-full object-cover rounded-2xl">
-                <p>🍔</p>
+                <p>🍽️</p>
               </div>
             )}
           </div>
@@ -125,49 +130,47 @@ export default function MealCard({
             </Badge>
           )}
 
+          {/*             
+            We only show seasons, to not clutter the UI
+            TODO in the future - add props to toggle tags and allergies */}
+          {!startTime && !endTime && !hideTags && seasons.length > 0 && (
+            <ul className="flex flex-wrap gap-2 absolute top-0 left-0 m-4">
+              {seasons.slice(0, 1).map((season, i) => (
+                <li key={i}>
+                  <Badge variant="primary">{season}</Badge>
+                </li>
+              ))}
+
+              {seasons.length > 1 && (
+                <li>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge variant="secondary">+{seasons.length - 1}</Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="opacity-100">
+                      <ul>
+                        {seasons.slice(1).map((remainingSeason, i) => (
+                          <li key={i}>{remainingSeason}</li>
+                        ))}
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+              )}
+            </ul>
+          )}
+
           <div className="p-6 rounded-b-2xl flex flex-col gap-4 absolute bottom-0 left-0">
             <div className="flex flex-col gap-2">
               <h3 className="text-xl font-semibold tracking-tight first-letter:capitalize">
                 {title}
               </h3>
-              <p className="opacity-80 first-letter:capitalize line-clamp-1">
-                {description}
-              </p>
+              {description && (
+                <p className="opacity-80 first-letter:capitalize line-clamp-1">
+                  {description}
+                </p>
+              )}
             </div>
-
-            {!hideTags && (
-              <ul className="flex flex-wrap gap-2">
-                {seasons.length > 0 && (
-                  <>
-                    {seasons.map((season, i) => (
-                      <li key={i}>
-                        <Badge variant="primary">{season}</Badge>
-                      </li>
-                    ))}
-                  </>
-                )}
-
-                {/* {tags.length > 0 && (
-                <>
-                  {tags.slice(0, tagsToDisplay).map((tag) => (
-                    <li key={tag} className="list-none">
-                      <Badge>{tag.name}</Badge>
-                    </li>
-                  ))}
-                </>
-              )} */}
-
-                {/* {allergies.length > 0 && (
-              <>
-                {allergies.slice(0, tagsToDisplay).map((allergy, i) => (
-                  <li key={allergy + i} className="list-none">
-                    <Badge>{allergy}</Badge>
-                  </li>
-                ))}
-              </>
-            )} */}
-              </ul>
-            )}
           </div>
         </div>
       </Link>

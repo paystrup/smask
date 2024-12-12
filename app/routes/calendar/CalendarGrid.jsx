@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Attendees from "./Attendees";
 import AddGuestsDialog from "./AddGuestsDialog";
@@ -85,6 +85,8 @@ export default function CalendarGrid({
               className={cn(
                 "rounded-xl h-full w-full transition-colors duration-200 ease-in-out",
                 isUserAttending ? "bg-green-400 text-white" : "bg-neutral-300",
+                isToday(day) &&
+                  (isUserAttending ? "bg-neutral-50" : "bg-neutral-600"),
               )}
             ></div>
           </div>
@@ -132,7 +134,6 @@ export default function CalendarGrid({
                 <div className="flex gap-2 flex-wrap opacity-80 text-black">
                   {(veganCount || vegetarianCount || pescetarianCount) && (
                     <p className="w-fit text-xs">
-                      (
                       {[
                         veganCount &&
                           `${veganCount} Vegan${veganCount > 1 ? "s" : ""}`,
@@ -143,7 +144,6 @@ export default function CalendarGrid({
                       ]
                         .filter(Boolean)
                         .join(", ")}
-                      )
                     </p>
                   )}
                 </div>
@@ -193,7 +193,7 @@ export default function CalendarGrid({
                               )
                             }
                           >
-                            Delete
+                            Remove
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -225,7 +225,8 @@ export default function CalendarGrid({
             />
           )}
 
-          {user && !isMonthView && (
+          {/* Dont show attend button if user is admin */}
+          {user && !user.admin && !isMonthView && (
             <Button
               size="lg"
               onClick={() => handleUserAttend(formattedDate)}
@@ -244,7 +245,7 @@ export default function CalendarGrid({
               ) : (
                 <Plus className="h-8 w-8" />
               )}
-              {/* {isUserAttending ? "Don't attend today" : "Attend"} */}
+              {isUserAttending ? "Don't attend" : "Attend"}
             </Button>
           )}
 

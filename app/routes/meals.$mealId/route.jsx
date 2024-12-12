@@ -110,7 +110,7 @@ export default function MealDetailPage() {
             </Dialog>
 
             <AlertDialog open={open} onOpenChange={setOpen}>
-              <AlertDialogTrigger>
+              <AlertDialogTrigger asChild>
                 <Button
                   variant="destructive"
                   className="min-w-28 flex items-center justify-center gap-2"
@@ -148,8 +148,8 @@ export default function MealDetailPage() {
               className="w-full h-[50vh] object-cover rounded-2xl col-span-12 lg:col-span-6"
             />
           ) : (
-            <div className="flex items-center justify-center text-3xl bg-slate-50 w-full h-[50vh] object-cover rounded-2xl col-span-12 lg:col-span-6">
-              <p>🍔</p>
+            <div className="flex items-center justify-center text-7xl bg-slate-50 w-full h-[50vh] object-cover rounded-2xl col-span-12 lg:col-span-6">
+              <p>🍽️</p>
             </div>
           )}
 

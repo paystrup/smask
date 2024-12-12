@@ -150,16 +150,32 @@ export default function ManageMeals({ day, allMeals, handleAddMeal }) {
                     onClick={() => setSelectedMeal(meal)}
                     key={meal?._id}
                   >
-                    <div>
-                      <p className="font-semibold line-clamp-2">
-                        {meal?.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {meal?.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(meal?.createdAt).toLocaleDateString()}
-                      </p>
+                    <div className="flex gap-4">
+                      <div className="relative aspect-square min-w-24 min-h-24 max-h-24 max-w-24">
+                        {meal?.image ? (
+                          <img
+                            src={meal?.image}
+                            alt={meal?.title}
+                            className="h-full w-full object-cover rounded-xl scale-100"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center text-xl bg-neutral-200 h-full w-full object-cover rounded-2xl">
+                            <p>🍽️</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="font-semibold line-clamp-2">
+                          {meal?.title}
+                        </p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {meal?.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(meal?.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 ))}

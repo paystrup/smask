@@ -1,23 +1,24 @@
 // Prompt for creating a new meal.
 // Output should be a JSON object with the following fields
 
+import {
+  mealDescriptionMaxLength,
+  mealDescriptionMinLength,
+  mealTitleMaxLength,
+  mealTitleMinLength,
+} from "~/db/constants";
+import { AllergyType, Seasons } from "~/db/models";
+
 export const createMealPrompt = (mealPrompt) => {
   return `
-    You are a professional chef working on a new menu for your restaurant.
-    Please create a new meal inspired by the following prompt: "${mealPrompt}"
+     Create a new meal inspired by the following prompt: "${mealPrompt}"
 
-    - **Title**: A title for the meal and accessories (between 3 and 100 characters).
-    - **Description**: A short description of the meal (between 10 and 300 characters).
-    - **Allergies**: A list of allergies (e.g., gluten, dairy, nuts, etc.). This can be an empty list if there are no known allergies.
-    - **Seasons**: The seasons during which this meal is ideal (e.g., spring, summer, fall, winter). Please provide at least one season.
-    - **Tags**: Tags that best describe the meal (e.g., vegetarian, low-carb, spicy, etc.). Provide at least one tag.
-
-    Ensure that the following constraints are met:
-    - **Title**: Minimum length of 3 characters, maximum of 100 characters.
-    - **Description**: Minimum length of 10 characters, maximum of 300 characters.
-    - **Allergies**: List of allergy types (you can only use either: milk, fish, shellfish, peanuts, tree nuts, eggs, wheat, soy, sesame, gluten, corn, sulfites, mustard, celery, lupin). Can be empty.
-    - **Seasons**: Use season names either "spring", "summer", "fall", or "winter" or "christmas" Include at least one season.
-    - **Tags**: Include at least one tag. Tag names should be descriptive and relevant.
+     Ensure that the following constraints are met:
+    - **Title**: A title for the meal and accessories (between ${mealTitleMinLength} and ${mealTitleMaxLength} characters).
+    - **Description**: A short description of the meal (between ${mealDescriptionMinLength} and ${mealDescriptionMaxLength} characters).
+    - **Allergies**: A list of allergies (Must be either ${Object.values(AllergyType).join(", ")}). This can be an empty list if there are no known allergies.
+    - **Seasons**: The seasons during which this meal is ideal (Must be either ${Object.values(Seasons).join(", ")}). Please provide at least one season.
+    - **Tags**: Tags that best describe the meal, should be descriptive and relevant (e.g., vegetarian, low-carb, spicy, etc.). Provide at least one tag.
 
     Example output:
     {

@@ -110,7 +110,7 @@ export default function MealDetailPage() {
             </Dialog>
 
             <AlertDialog open={open} onOpenChange={setOpen}>
-              <AlertDialogTrigger>
+              <AlertDialogTrigger asChild>
                 <Button
                   variant="destructive"
                   className="min-w-28 flex items-center justify-center gap-2"

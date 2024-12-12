@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
-import { json } from "@remix-run/node";
+import { json } from "@vercel/remix";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 import { useState } from "react";

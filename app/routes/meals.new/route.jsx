@@ -18,6 +18,9 @@ import { createMealPrompt } from "~/utils/prompts/createMealPrompt";
 import { AnimatePresence, motion } from "motion/react";
 import { easeInOut } from "motion";
 
+// This is the maximum length of the string that the user can input for the meal prompt
+const generatorStringMaxLength = 100;
+
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
@@ -120,10 +123,7 @@ export default function CreateMeal() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{
-                duration: 0.3,
-                ease: easeInOut,
-              }}
+              transition={{ duration: 0.3, ease: easeInOut }}
               className="w-full"
             >
               <fetcher.Form className="w-full mb-12" method="post">
@@ -141,7 +141,7 @@ export default function CreateMeal() {
                       type="text"
                       name="mealPrompt"
                       id="mealPrompt"
-                      maxLength={100}
+                      maxLength={generatorStringMaxLength}
                       placeholder="Enter a prompt for meal inspiration"
                       defaultValue={""}
                       className={`border ${
@@ -175,11 +175,9 @@ export default function CreateMeal() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              ease: "easeInOut",
-            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="w-full flex items-center justify-center"
+            aria-label="Show generator input field"
           >
             <Button onClick={() => setShowGenerator(true)} className="mb-12">
               ✨ Generate meal with AI
@@ -409,12 +407,11 @@ export default function CreateMeal() {
 
 export async function action({ request }) {
   const form = await request.formData();
-  const { title, description, tags } = Object.fromEntries(form);
+  const { title, description, tags, mealPrompt, action } =
+    Object.fromEntries(form);
 
   const allergies = form.getAll("allergies");
   const seasons = form.getAll("seasons");
-  const mealPrompt = form.get("mealPrompt");
-  const action = form.get("action");
 
   if (action === "generateMeal") {
     if (!mealPrompt) {
@@ -424,11 +421,11 @@ export async function action({ request }) {
       );
     }
 
-    if (mealPrompt.length > 100) {
+    if (mealPrompt.length > generatorStringMaxLength) {
       return json(
         {
           errors: {
-            mealPrompt: "Meal prompt must be less than 100 characters",
+            mealPrompt: `Meal prompt must be less than ${generatorStringMaxLength} characters`,
           },
         },
         { status: 400 },

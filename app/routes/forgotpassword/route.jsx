@@ -6,7 +6,7 @@ import {
   useNavigation,
   useRouteError,
 } from "@remix-run/react";
-import { json } from "@remix-run/node";
+import { json } from "@vercel/remix";
 import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";

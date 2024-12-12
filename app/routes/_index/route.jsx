@@ -205,6 +205,7 @@ export default function Index() {
             onSubmit={() =>
               handleUserAttend(relevantMealday?.date || formattedDate)
             }
+            isAdmin={isAdmin}
             onGuestSubmit={(diet, action) =>
               handleGuestAttend(
                 relevantMealday?.date || formattedDate,

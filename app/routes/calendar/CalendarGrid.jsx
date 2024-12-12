@@ -85,7 +85,8 @@ export default function CalendarGrid({
               className={cn(
                 "rounded-xl h-full w-full transition-colors duration-200 ease-in-out",
                 isUserAttending ? "bg-green-400 text-white" : "bg-neutral-300",
-                isToday(day) && "bg-neutral-50",
+                isToday(day) &&
+                  (isUserAttending ? "bg-neutral-50" : "bg-neutral-600"),
               )}
             ></div>
           </div>

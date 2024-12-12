@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import { models } from "./models.js";
 
-const { MONGODB_URL, NODE_ENV } = process.env;
+const { MONGODB_URI, NODE_ENV } = process.env;
 
-if (!MONGODB_URL) {
+if (!MONGODB_URI) {
   const errorMessage =
     NODE_ENV === "production"
-      ? "Please define the MONGODB_URL environment variable — pointing to your full connection string, including database name."
-      : "Please define the MONGODB_URL environment variable inside an .env file — pointing to your full connection string, including database name.";
+      ? "Please define the MONGODB_URI environment variable — pointing to your full connection string, including database name."
+      : "Please define the MONGODB_URI environment variable inside an .env file — pointing to your full connection string, including database name.";
   throw new Error(errorMessage);
 }
 
@@ -64,7 +64,7 @@ export default function connectDb() {
   }
 
   // ...and create a new connection:
-  mongoose.connect(MONGODB_URL).catch((error) => {
+  mongoose.connect(MONGODB_URI).catch((error) => {
     console.error(error);
   });
 }

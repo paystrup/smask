@@ -17,9 +17,20 @@ import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 import backgroundImage from "~/assets/img/login-background.jpg";
 
-export function meta() {
-  return [{ title: "smask | Login" }];
-}
+export const meta = () => {
+  return [
+    { title: "SMASK | Login" },
+    {
+      property: "og:title",
+      content: "SMASK | Login",
+    },
+    {
+      name: "description",
+      content:
+        "Log in to your SMASK account to organize lunches and access personalized features. Enter your email and password to get started.",
+    },
+  ];
+};
 
 export async function loader({ request }) {
   await authenticator.isAuthenticated(request, {

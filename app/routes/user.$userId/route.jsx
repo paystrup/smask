@@ -30,6 +30,24 @@ export async function loader({ request, params }) {
   return json({ userData });
 }
 
+export const meta = ({ data }) => {
+  const userName = data?.userData?.firstName && data?.userData?.lastName
+    ? `${data.userData.firstName} ${data.userData.lastName}`
+    : "User";
+  return [
+    { title: `SMASK | ${userName} Profile` },
+    {
+      property: "og:title",
+      content: `SMASK | ${userName} Profile`,
+    },
+    {
+      name: "description",
+      content: "The profile page of a user displaying their avatar, name, latest attendance, favorite dish and much more...",
+    },
+  ];
+};
+
+
 export default function DynamicProfilePage() {
   const { userData } = useLoaderData();
 

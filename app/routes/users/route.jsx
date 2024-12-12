@@ -15,9 +15,19 @@ import {
 } from "~/components/ui/table";
 import { authenticator } from "~/services/auth.server";
 
-export function meta() {
-  return [{ title: "smask | Your workspace" }];
-}
+export const meta = () => {
+  return [
+    { title: "SMASK | Your Workspace" },
+    {
+      property: "og:title",
+      content: "SMASK | Your Workspace",
+    },
+    {
+      name: "description",
+      content: "An overview of all users in your current workspace",
+    },
+  ];
+};
 
 // Find users in the same workspace / location as signed in user
 export async function loader({ request }) {

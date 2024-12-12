@@ -5,6 +5,20 @@ import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import Ribbon from "~/components/_foundation/Ribbon";
 import { authenticator } from "~/services/auth.server";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Notifications" },
+    {
+      property: "og:title",
+      content: "SMASK | Notifications",
+    },
+    {
+      name: "description",
+      content: "Find your latest notifications",
+    },
+  ];
+};
+
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",

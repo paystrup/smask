@@ -12,6 +12,20 @@ import Announcements from "./Announcements";
 import { Badge } from "~/components/ui/badge";
 import UserGreeting from "./UserGreeting";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Dashboard Overview" },
+    {
+      property: "og:title",
+      content: "SMASK | Dashboard Overview",
+    },
+    {
+      name: "description",
+      content: "The dashboard overview page, that shows you an overview of the daily menu, attendees, announcements and more...",
+    },
+  ];
+};
+
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",

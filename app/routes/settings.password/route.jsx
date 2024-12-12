@@ -20,6 +20,20 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Account Settings" },
+    {
+      property: "og:title",
+      content: "SMASK | Account Settings",
+    },
+    {
+      name: "description",
+      content: "Change your account settings",
+    },
+  ];
+};
+
 export async function loader({ request }) {
   try {
     const user = await authenticator.isAuthenticated(request, {

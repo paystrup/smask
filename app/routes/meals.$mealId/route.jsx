@@ -78,7 +78,17 @@ export async function loader({ request, params }) {
 }
 
 export const meta = ({ data }) => {
-  return [{ title: `SMASK | ${data?.meal?.title || "Meal"}` }];
+  return [
+    { title: `SMASK | ${data?.meal?.title || "Meal"}` },
+    {
+      property: "og:title",
+      content: `SMASK | ${data?.meal?.title || "Meal"}`,
+    },
+    {
+      name: "description",
+      content: data?.meal?.description || "Smask meal details page",
+    },
+  ];
 };
 
 export default function MealDetailPage() {

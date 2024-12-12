@@ -38,6 +38,20 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Calendar" },
+    {
+      property: "og:title",
+      content: "SMASK | Calendar",
+    },
+    {
+      name: "description",
+      content: "The calendar page that shows you a weekly or monthly calendar and allows you to organize the days you want to attend.",
+    },
+  ];
+};
+
 export const loader = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",

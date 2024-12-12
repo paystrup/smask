@@ -5,6 +5,20 @@ import { Input } from "~/components/ui/input";
 import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import Ribbon from "~/components/_foundation/Ribbon";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Add New Location" },
+    {
+      property: "og:title",
+      content: "SMASK | Add New Location",
+    },
+    {
+      name: "description",
+      content: "Add a new location to the SMASK platform, complete with a unique name and code.",
+    },
+  ];
+};
+
 export default function AddLocation() {
   const actionData = useActionData();
 

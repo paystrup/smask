@@ -5,6 +5,20 @@ import mongoose from "mongoose";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { authenticator } from "~/services/auth.server";
 
+export const meta = () => {
+  return [
+    { title: "SMASK | Settings" },
+    {
+      property: "og:title",
+      content: "SMASK | Settings",
+    },
+    {
+      name: "description",
+      content: "Change your settings",
+    },
+  ];
+};
+
 export async function loader({ request, params }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",

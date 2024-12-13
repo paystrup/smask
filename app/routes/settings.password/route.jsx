@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { sendConfirmPasswordReset } from "~/utils/server/nodeMailer.server";
 
 export const meta = () => {
   return [
@@ -151,6 +152,7 @@ export const action = async ({ request }) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     dbUser.password = hashedPassword;
     await dbUser.save();
+    await sendConfirmPasswordReset(dbUser.emaildb, dbUser.firstName);
 
     return redirect("/settings");
   } catch (error) {

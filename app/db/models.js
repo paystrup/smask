@@ -173,6 +173,11 @@ const mealSchema = new Schema(
       minLength: [mealTitleMinLength, "Meal title is too short"],
       maxLength: [mealTitleMaxLength, "Meal title is too long"],
     },
+    location: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Location",
+      required: true,
+    },
     description: {
       type: String,
       required: true,

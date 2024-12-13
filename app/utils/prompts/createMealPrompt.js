@@ -32,3 +32,11 @@ export const createMealPrompt = (mealPrompt) => {
     Make sure your response follows this format with valid data.
   `;
 };
+
+export const createMealDescriptionPrompt = (title) => {
+  return `Generate a description for a meal with the title "${title}. Return only a string with the max length of ${mealDescriptionMaxLength} and minimum length of ${mealDescriptionMinLength}`;
+};
+
+export const createMealImagePrompt = (title) => {
+  return `Generate a food image for a recipe book for the dish ${title}. The image should be colorful and vibrant, and have a clean background suitable for a recipe book.`;
+};

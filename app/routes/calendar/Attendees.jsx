@@ -3,7 +3,13 @@
 // Attendees are sorted by first name
 // Attendees are limited to slicecount
 
-import Avatar from "~/components/_feature/avatar/Avatar";
+import { UserRound } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 // Props: mealDay
 export default function Attendees({ mealDay, maxAvatars }) {
@@ -16,7 +22,7 @@ export default function Attendees({ mealDay, maxAvatars }) {
   return (
     <>
       {mealDay.totalAttendees > 0 && (
-        <ul className="flex flex-wrap items-center justify-center gap-2 p-2 -ms-4 w-fit">
+        <ul className="flex -space-x-2 overflow-hidden">
           {mealDay.attendeeDetails
             .sort((a, b) => {
               const firstNameA = a?.firstName?.toLowerCase() || "";
@@ -25,21 +31,31 @@ export default function Attendees({ mealDay, maxAvatars }) {
             })
             .slice(0, sliceCount)
             .map((attendee) => (
-              <li key={attendee?.user?._id || Math.random()} className="-me-4">
-                {attendee?.image ? (
-                  <img
-                    src={attendee?.image}
-                    alt={`${attendee?.firstName || "Guest"} ${
-                      attendee?.lastName || ""
-                    }`}
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <Avatar
-                    className="text-xs "
-                    name={attendee?.firstName || "?"}
-                  />
-                )}
+              <li key={attendee?.user?._id || Math.random()}>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="inline-block size-8 rounded-full relative">
+                      {attendee?.image ? (
+                        <img
+                          src={attendee?.image}
+                          alt={`${attendee?.firstName || "Guest"} ${
+                            attendee?.lastName || ""
+                          }`}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full size-8 h-full rounded-full object-cover bg-neutral-800 text-white flex items-center justify-center relative">
+                          <p className="text-xs absolute inset-0 flex items-center justify-center">
+                            {attendee?.firstName?.charAt(0) || "?"}
+                          </p>
+                        </div>
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{attendee?.firstName + " " + attendee?.lastName}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </li>
             ))}
 
@@ -51,15 +67,26 @@ export default function Attendees({ mealDay, maxAvatars }) {
               ),
             },
             (_, index) => (
-              <li key={`placeholder-${index}`} className="-me-4">
-                <Avatar className="bg-neutral-50 text-black" name="?" />
+              <li
+                key={`placeholder-${index}`}
+                className="inline-block size-8 rounded-full"
+              >
+                <div className="w-full h-full rounded-full object-cover bg-white text-black flex items-center justify-center relative">
+                  <p className="text-xs absolute inset-0 flex items-center justify-center">
+                    <UserRound className="w-4 h-4 opacity-50" />
+                  </p>
+                </div>
               </li>
             ),
           )}
 
           {mealDay.totalAttendees > sliceCount && (
-            <li className="flex items-center justify-center h-8 w-8 bg-primary-blue text-white text-xs font-bold rounded-full">
-              +{mealDay.totalAttendees - sliceCount}
+            <li className="inline-block size-8 rounded-full">
+              <div className="w-full h-full rounded-full object-cover bg-primary-blue text-white flex items-center justify-center relative">
+                <p className="text-xs font-semibold absolute inset-0 flex items-center justify-center">
+                  +{mealDay.totalAttendees - sliceCount}
+                </p>
+              </div>
             </li>
           )}
         </ul>

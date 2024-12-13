@@ -7,12 +7,14 @@ import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import {
   Carrot,
+  Check,
   Fish,
   LeafyGreen,
   Loader2,
   Minus,
   Plus,
-  User,
+  UserRound,
+  X,
 } from "lucide-react";
 import { Diets } from "~/db/models";
 import { Form } from "@remix-run/react";
@@ -25,6 +27,12 @@ import {
 } from "~/components/ui/dialog";
 import { AnimatePresence, motion } from "motion/react";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 export function DailyAttendanceCard({
   mealDays,
@@ -63,10 +71,20 @@ export function DailyAttendanceCard({
     return counts;
   }, {});
 
-  const veganCount = dietCounts?.vegan || null;
-  const vegetarianCount = dietCounts?.vegetarian || null;
-  const pescetarianCount = dietCounts?.pescetarian || null;
   const dateString = format(displayDate, "EEE, MMM d");
+
+  const getDietIcon = (diet) => {
+    switch (diet) {
+      case "vegan":
+        return <Carrot strokeWidth={1.7} className="w-4 h-4" />;
+      case "vegetarian":
+        return <LeafyGreen strokeWidth={1.7} className="w-4 h-4" />;
+      case "pescetarian":
+        return <Fish strokeWidth={1.7} className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card
@@ -90,155 +108,169 @@ export function DailyAttendanceCard({
               {dateString}
             </p>
           </div>
-          <div>
-            <Attendees mealDay={relevantMealday} className="-me-8" />
-          </div>
-        </div>
 
-        <div className="flex mt-4 gap-2 flex-wrap">
-          {veganCount && (
-            <Badge variant="default" className="w-fit">
-              {veganCount} Vegan{veganCount > 1 && "s"}
-            </Badge>
-          )}
-          {vegetarianCount && (
-            <Badge variant="default" className="w-fit">
-              {vegetarianCount} Vegetarian{vegetarianCount > 1 && "s"}
-            </Badge>
-          )}
-          {pescetarianCount && (
-            <Badge variant="default" className="w-fit">
-              {pescetarianCount} Pescetarian{pescetarianCount > 1 && "s"}
-            </Badge>
-          )}
+          <div className="flex gap-2">
+            {!isAdmin && (
+              <Button
+                onClick={onSubmit}
+                className={cn(
+                  "tracking-tight font-medium",
+                  isUserAttending
+                    ? "bg-red-500"
+                    : "bg-green-500 hover:bg-green-600",
+                )}
+                variant={isUserAttending ? "destructive" : "default"}
+                disabled={isSubmitting}
+                aria-label={isUserAttending ? "Don't attend today" : "Attend"}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="animate-spin" />
+                ) : isUserAttending ? (
+                  <X strokeWidth={3} />
+                ) : (
+                  <Check strokeWidth={3} />
+                )}
+                {isUserAttending ? "Don't attend" : "Attend"}
+              </Button>
+            )}
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="w-full" variant="secondary">
+                  <UserRound className="w-6 h-6" />
+                  {userGuestsToday?.length || 0}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    Your guests ({userGuestsToday?.length || 0})
+                  </DialogTitle>
+                  <DialogDescription className="text-sm opacity-70">
+                    Add guests below by their diet preferences
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Form className="grid grid-cols-6 gap-4 mt-4">
+                  {Object.values(Diets).map((diet) => (
+                    <Card
+                      key={diet}
+                      className="overflow-hidden col-span-6 md:col-span-3 border-0 bg-gray-100"
+                    >
+                      <CardHeader className="bg-black text-white p-4">
+                        <CardTitle className="flex items-center justify-between text-md p-0">
+                          <span>
+                            {diet.charAt(0).toUpperCase() + diet.slice(1)}
+                          </span>
+                          {diet === "vegan" && (
+                            <Carrot className="w-6 h-6 text-primary-foreground opacity-30" />
+                          )}
+                          {diet === "vegetarian" && (
+                            <LeafyGreen className="w-6 h-6 text-primary-foreground opacity-30" />
+                          )}
+                          {diet === "pescetarian" && (
+                            <Fish className="w-6 h-6 text-primary-foreground opacity-30" />
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            type="button"
+                            onClick={() =>
+                              onGuestSubmit(diet.toString(), "removeGuest")
+                            }
+                            aria-label={`Remove ${diet} guest`}
+                            disabled={!userGuestDietCounts?.[diet]}
+                          >
+                            <Minus className="h-2 w-2" />
+                          </Button>
+                          <AnimatePresence mode="wait">
+                            <motion.span
+                              key={userGuestDietCounts?.[diet] || 0}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -20 }}
+                              className="text-xl lg:text-4xl font-bold"
+                            >
+                              {userGuestDietCounts?.[diet] || 0}
+                            </motion.span>
+                          </AnimatePresence>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            type="button"
+                            onClick={() => {
+                              onGuestSubmit(diet.toString(), "attendGuest");
+                            }}
+                            aria-label={`Add ${diet} guest`}
+                          >
+                            <Plus className="h-2 w-2" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Form>
+
+                {/* Form to remove all guests */}
+                <Form method="post" className="mt-4">
+                  <input type="hidden" name="date" value={formattedDate} />
+                  <input type="hidden" name="action" value="removeAllGuests" />
+
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={userGuestsToday?.length === 0}
+                    className={cn(
+                      "w-full",
+                      userGuestsToday?.length === 0 &&
+                        "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    Remove all guests
+                  </Button>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </CardTitle>
 
-      <div className="flex w-full items-center justify-center gap-2">
+      <div className="flex w-full items-center justify-center gap-2 py-20 lg:py-12">
         <h3 className="text-9xl tracking-tighter font-medium">{attendance}</h3>
       </div>
 
-      <CardContent className="flex flex-col gap-2 mt-8 p-0 z-[4]">
-        {!isAdmin && (
-          <Button
-            onClick={onSubmit}
-            size="lg"
-            className={cn(
-              isUserAttending
-                ? "bg-red-500"
-                : "bg-green-500 hover:bg-green-600",
-            )}
-            variant={isUserAttending ? "destructive" : "default"}
-            disabled={isSubmitting}
-            aria-label={isUserAttending ? "Don't attend today" : "Attend"}
-          >
-            {isSubmitting && <Loader2 className="animate-spin" />}
-            {isUserAttending ? <Minus /> : <Plus />}
-            {isUserAttending ? "Don't attend" : "Attend"}
-          </Button>
-        )}
+      <CardContent className="flex flex-wrap justify-between gap-2 mt-8 p-0 z-[4]">
+        <Attendees mealDay={relevantMealday} />
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size="lg" className="w-full" variant="secondary">
-              <User className="w-6 h-6" />
-              Your guests ({userGuestsToday?.length || 0})
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                Your guests ({userGuestsToday?.length || 0})
-              </DialogTitle>
-              <DialogDescription className="text-sm opacity-70">
-                Add guests below by their diet preferences
-              </DialogDescription>
-            </DialogHeader>
-
-            <Form className="grid grid-cols-6 gap-4 mt-4">
-              {Object.values(Diets).map((diet) => (
-                <Card
-                  key={diet}
-                  className="overflow-hidden col-span-6 md:col-span-3 border-0 bg-gray-100"
-                >
-                  <CardHeader className="bg-black text-white p-4">
-                    <CardTitle className="flex items-center justify-between text-md p-0">
-                      <span>
-                        {diet.charAt(0).toUpperCase() + diet.slice(1)}
-                      </span>
-                      {diet === "vegan" && (
-                        <Carrot className="w-6 h-6 text-primary-foreground opacity-30" />
-                      )}
-                      {diet === "vegetarian" && (
-                        <LeafyGreen className="w-6 h-6 text-primary-foreground opacity-30" />
-                      )}
-                      {diet === "pescetarian" && (
-                        <Fish className="w-6 h-6 text-primary-foreground opacity-30" />
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        type="button"
-                        onClick={() =>
-                          onGuestSubmit(diet.toString(), "removeGuest")
-                        }
-                        aria-label={`Remove ${diet} guest`}
-                        disabled={!userGuestDietCounts?.[diet]}
+        <div className="flex gap-1 flex-wrap">
+          {Object.entries(dietCounts).map(
+            ([diet, count]) =>
+              diet !== "none" && (
+                <TooltipProvider key={diet}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge
+                        size="sm"
+                        variant="default"
+                        className="w-fit flex items-center justify-center gap-1"
+                        aria-label={`${count} ${diet}`}
                       >
-                        <Minus className="h-2 w-2" />
-                      </Button>
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={userGuestDietCounts?.[diet] || 0}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          className="text-xl lg:text-4xl font-bold"
-                        >
-                          {userGuestDietCounts?.[diet] || 0}
-                        </motion.span>
-                      </AnimatePresence>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        type="button"
-                        onClick={() => {
-                          onGuestSubmit(diet.toString(), "attendGuest");
-                        }}
-                        aria-label={`Add ${diet} guest`}
-                      >
-                        <Plus className="h-2 w-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </Form>
-
-            {/* Form to remove all guests */}
-            <Form method="post" className="mt-4">
-              <input type="hidden" name="date" value={formattedDate} />
-              <input type="hidden" name="action" value="removeAllGuests" />
-
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={userGuestsToday?.length === 0}
-                className={cn(
-                  "w-full",
-                  userGuestsToday?.length === 0 &&
-                    "opacity-50 cursor-not-allowed",
-                )}
-              >
-                Remove all guests
-              </Button>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                        {getDietIcon(diet)}
+                        {count}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{diet}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ),
+          )}
+        </div>
       </CardContent>
     </Card>
   );

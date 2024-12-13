@@ -1,5 +1,5 @@
 import { Form } from "@remix-run/react";
-import { Carrot, Fish, LeafyGreen, Minus, Plus, User } from "lucide-react";
+import { Carrot, Fish, LeafyGreen, Minus, Plus, UserRound } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -35,7 +35,7 @@ export default function AddGuestsDialog({
           )}
           variant="secondary"
         >
-          <User className="w-6 h-6" />
+          <UserRound className="w-6 h-6" />
           {userGuestsToday?.length === 0 || userGuestsToday === undefined
             ? "Add guests"
             : "Your guests"}{" "}

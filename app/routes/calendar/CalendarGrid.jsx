@@ -2,7 +2,7 @@ import { format, isToday } from "date-fns";
 import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Attendees from "./Attendees";
 import AddGuestsDialog from "./AddGuestsDialog";
-import { Ellipsis, Minus, Plus } from "lucide-react";
+import { Check, Ellipsis, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { easeInOut, motion } from "motion/react";
@@ -241,9 +241,9 @@ export default function CalendarGrid({
               aria-label={isUserAttending ? "Don't attend today" : "Attend"}
             >
               {isUserAttending ? (
-                <Minus className="h-8 w-8" />
+                <X strokeWidth={3} className="h-8 w-8" />
               ) : (
-                <Plus className="h-8 w-8" />
+                <Check strokeWidth={3} className="h-8 w-8" />
               )}
               {isUserAttending ? "Don't attend" : "Attend"}
             </Button>

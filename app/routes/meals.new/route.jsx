@@ -24,6 +24,7 @@ import { easeInOut } from "motion";
 import { sanitizeInputs } from "~/utils/client/simpleSanitization";
 import fetch from "node-fetch";
 import { base64ToFile } from "~/utils/server/encodeImageUrl.server";
+import { generatorStringMaxLength } from "~/db/constants";
 
 export const meta = () => {
   return [
@@ -38,9 +39,6 @@ export const meta = () => {
     },
   ];
 };
-
-// This is the maximum length of the string that the user can input for the meal prompt
-const generatorStringMaxLength = 100;
 
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
@@ -532,6 +530,15 @@ export default function CreateMeal() {
 }
 
 export async function action({ request }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
+  if (!user.admin) {
+    console.error("User is not an admin");
+    return redirect("/");
+  }
+
   const form = await request.formData();
   const { title, description, tags, mealPrompt, action } =
     Object.fromEntries(form);
@@ -648,6 +655,7 @@ export async function action({ request }) {
         seasons: seasons,
         tags: tagIds,
         image: imageUrl || undefined,
+        location: user.location,
       });
       await newMeal.save();
       return redirect(`/meals/${newMeal._id}`);
@@ -678,9 +686,6 @@ export async function action({ request }) {
       });
 
       const imageUrl = dalleImage.data[0].url;
-
-      // Log the image URL for debugging
-      console.log("Generated Image URL:", imageUrl);
 
       // Fetch the image file from the generated URL
       const imageResponse = await fetch(imageUrl);

@@ -7,7 +7,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, TrendingUpIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import {
@@ -88,7 +88,7 @@ export default function AttendanceChart({ mealDays }) {
   // Determine the icon and color
   const isPositive = difference > 0;
   const trendIcon = isPositive ? (
-    <ArrowUp className="h-5 w-5 text-white" />
+    <TrendingUpIcon className="h-5 w-5 text-white" />
   ) : (
     <ArrowDown className="h-5 w-5 text-white" />
   );
@@ -100,7 +100,7 @@ export default function AttendanceChart({ mealDays }) {
         <div className="flex items-start justify-between">
           <CardTitle className="mb-16 space-y-1">
             <h3 className="text-2xl font-semibold tracking-tighter">
-              {view === "week" ? "Weekly" : "Monthly"} Attendance
+              {view === "week" ? "Weekly" : "Monthly"} attendance
             </h3>
             <p className="text-lg opacity-80 font-normal">
               {format(days[0].date, "MMM d")} -{" "}

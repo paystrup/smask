@@ -7,8 +7,8 @@ export default function BackButton() {
 
   return (
     <button onClick={goBack} className="flex gap-2 mb-8">
-      <MoveLeft size={24} />
-      <p>Go back</p>
+      <MoveLeft size={20} />
+      <p>Back</p>
     </button>
   );
 }

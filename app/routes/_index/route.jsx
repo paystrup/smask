@@ -21,7 +21,8 @@ export const meta = () => {
     },
     {
       name: "description",
-      content: "The dashboard overview page, that shows you an overview of the daily menu, attendees, announcements and more...",
+      content:
+        "The dashboard overview page, that shows you an overview of the daily menu, attendees, announcements and more...",
     },
   ];
 };
@@ -178,7 +179,7 @@ export default function Index() {
   const todayOrNextWorkday = isEndOfWeek ? "next workday" : "today";
 
   return (
-    <section className="flex flex-col lg:h-[100svh] p-2 md:px-4 lg:px-8 pt-14">
+    <section className="flex flex-col lg:h-[100svh] p-2 md:px-4 lg:px-8 pt-14 pb-6">
       <div className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12">
         <div className="flex gap-2">
           <UserGreeting userData={userData} isAdmin={isAdmin} />
@@ -207,11 +208,6 @@ export default function Index() {
 
       <div className="grid grid-cols-12 gap-4 flex-grow overflow-hidden">
         <div className="col-span-12 lg:col-span-5 flex flex-col gap-4">
-          <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
-          <WeeklyAttendance mealDays={mealDays} />
-        </div>
-
-        <div className="col-span-12 lg:col-span-3">
           <DailyAttendanceCard
             mealDays={mealDays}
             isUserAttending={isUserAttending}
@@ -229,15 +225,17 @@ export default function Index() {
             }
             userGuestsToday={userGuestsToday}
           />
+          <Announcements />
         </div>
 
-        <div className="col-span-12 lg:col-span-4 lg:grid lg:grid-rows-8 gap-4">
-          <div className="lg:row-span-3">
-            <Announcements />
-          </div>
-          <div className="lg:row-span-5">
-            <WeeklyBirthdays users={allUsersInWorkspace} />
-          </div>
+        <div className="col-span-12 lg:col-span-4">
+          <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
+        </div>
+
+        <div className="col-span-3 flex flex-col w-full h-full gap-4">
+          <WeeklyAttendance mealDays={mealDays} />
+
+          <WeeklyBirthdays users={allUsersInWorkspace} />
         </div>
       </div>
     </section>

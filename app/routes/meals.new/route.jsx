@@ -14,9 +14,16 @@ import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { openai } from "~/utils/server/openAi.server";
-import { createMealPrompt } from "~/utils/prompts/createMealPrompt";
+import {
+  createMealDescriptionPrompt,
+  createMealImagePrompt,
+  createMealPrompt,
+} from "~/utils/prompts/createMealPrompt";
 import { AnimatePresence, motion } from "motion/react";
 import { easeInOut } from "motion";
+import { sanitizeInputs } from "~/utils/client/simpleSanitization";
+import fetch from "node-fetch";
+import { base64ToFile } from "~/utils/server/encodeImageUrl.server";
 
 export const meta = () => {
   return [
@@ -55,13 +62,20 @@ export default function CreateMeal() {
   const [selectedSeasons, setSelectedSeasons] = useState([]);
   const [generatedMeal, setGeneratedMeal] = useState(null);
   const [image, setImage] = useState(null);
+  const [generatedDescription, setGeneratedDescription] = useState(null);
   const [formKey, setFormKey] = useState(0);
+
+  const [currentEmojiIndex, setCurrentEmojiIndex] = useState(0);
+  const emojis = ["🍳", "🥘", "🍲", "🥗", "🍝", "🍔", "🍕", "🍣", "🍱", "🍰"];
+  const isSubmitting = fetcher.state === "submitting";
   const isGenerating =
-    fetcher.state === "submitting" &&
-    fetcher.formData?.get("action") === "generateMeal";
+    isSubmitting && fetcher.formData?.get("action") === "generateMeal";
   const isSaving =
-    fetcher.state === "submitting" &&
-    fetcher.formData?.get("action") === "saveMeal";
+    isSubmitting && fetcher.formData?.get("action") === "saveMeal";
+  const isGeneratingImage =
+    isSubmitting && fetcher.formData?.get("action") === "generateImage";
+  const isGeneratingDescription =
+    isSubmitting && fetcher.formData?.get("action") === "generateDescription";
 
   useEffect(() => {
     if (fetcher.data?.meal) {
@@ -71,7 +85,23 @@ export default function CreateMeal() {
       // Force re-render of the form
       setFormKey((prevKey) => prevKey + 1);
     }
+    if (fetcher.data?.generatedImage) {
+      setImage(fetcher.data.generatedImage);
+    }
+    if (fetcher.data?.generatedDescription) {
+      setGeneratedDescription(fetcher.data.generatedDescription);
+    }
   }, [fetcher.data]);
+
+  useEffect(() => {
+    let interval;
+    if (isGeneratingImage) {
+      interval = setInterval(() => {
+        setCurrentEmojiIndex((prevIndex) => (prevIndex + 1) % emojis.length);
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [isGeneratingImage]);
 
   const allergyOptions = Object.values(AllergyType).map((allergy) => ({
     label: allergy,
@@ -101,10 +131,10 @@ export default function CreateMeal() {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    if (file.size < 500000) {
+    if (file.size < 100000) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImage(e.target.result);
+        setImage(e.target.result); // Set the image state
       };
       reader.readAsDataURL(file);
     } else {
@@ -171,8 +201,10 @@ export default function CreateMeal() {
                     >
                       {isGenerating ? (
                         <Loader2 className="animate-spin h-4 w-4" />
+                      ) : generatedMeal ? (
+                        "Generate again?"
                       ) : (
-                        "Generate meal"
+                        "Generate"
                       )}
                     </Button>
                   </div>
@@ -230,10 +262,10 @@ export default function CreateMeal() {
                     encType="multipart/form-data"
                     className="flex flex-col gap-2"
                   >
-                    <fieldset className="flex flex-col gap-4">
+                    <fieldset className="flex flex-col gap-6">
                       <div>
                         <label htmlFor="title" className="mb-1 block">
-                          Title
+                          Title*
                         </label>
                         <Input
                           type="text"
@@ -253,14 +285,37 @@ export default function CreateMeal() {
                       </div>
 
                       <div>
-                        <label htmlFor="description" className="mb-1 block">
-                          Description
-                        </label>
+                        <div className="flex justify-between items-center">
+                          <label htmlFor="description" className="mb-1 block">
+                            Description*
+                          </label>
+                          <Button
+                            type="submit"
+                            name="action"
+                            value="generateDescription"
+                            size="sm"
+                            disabled={isGeneratingDescription}
+                            className="mb-2"
+                          >
+                            {isGeneratingDescription ? (
+                              <Loader2 className="animate-spin h-4 w-4" />
+                            ) : generatedDescription ? (
+                              "Generate again?"
+                            ) : (
+                              "🪄 Generate"
+                            )}
+                          </Button>
+                        </div>
                         <Textarea
                           name="description"
                           id="description"
                           placeholder="Description"
-                          defaultValue={generatedMeal?.description || ""}
+                          defaultValue={
+                            generatedMeal?.description ||
+                            generatedDescription ||
+                            ""
+                          }
+                          disabled={isGeneratingDescription}
                           className={`border ${
                             fetcher.data?.errors?.description
                               ? "border-red-500"
@@ -333,7 +388,6 @@ export default function CreateMeal() {
                         {fetcher.data.errors.allergies}
                       </p>
                     )}
-
                     <fieldset className="mt-8">
                       <legend className="mb-2 block">Seasons</legend>
                       <div className="flex flex-wrap gap-2">
@@ -371,22 +425,78 @@ export default function CreateMeal() {
                     )}
 
                     <div className="mt-6 flex flex-col gap-2">
-                      <label htmlFor="image" className="mb-1 block">
-                        Upload Image
-                      </label>
-                      <Input
-                        type="file"
-                        name="image"
-                        id="image"
-                        onChange={handleImageChange}
-                      />
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="image" className="mb-1 block">
+                          Image
+                        </label>
+                        <Button
+                          type="submit"
+                          name="action"
+                          value="generateImage"
+                          size="sm"
+                          disabled={isGeneratingImage}
+                        >
+                          {isGeneratingImage ? (
+                            <Loader2 className="animate-spin h-4 w-4" />
+                          ) : image ? (
+                            "Generate again?"
+                          ) : (
+                            "🪄 Generate"
+                          )}
+                        </Button>
+                      </div>
+                      {!isGeneratingImage && (
+                        <>
+                          {/* Hidden input to store the base64 image */}
+                          <input
+                            type="hidden"
+                            name="generatedImage"
+                            value={image || ""}
+                          />
+                          <Input
+                            type="file"
+                            name="image"
+                            id="image"
+                            onChange={handleImageChange}
+                          />
+                        </>
+                      )}
+
+                      {isGeneratingImage && (
+                        <div className="flex flex-col items-center justify-center py-12">
+                          <motion.div
+                            key={currentEmojiIndex}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="text-4xl"
+                          >
+                            {emojis[currentEmojiIndex]}
+                          </motion.div>
+                          <p className="max-w-[25ch] text-center text-sm opacity-70 animate-pulse mt-4">
+                            Please wait while we are painting your image
+                          </p>
+                        </div>
+                      )}
                       <div className="flex w-full items-center justify-center">
                         {image && (
-                          <img
-                            src={image}
-                            alt="Selected"
-                            className="mt-4 h-48 w-48 object-cover rounded-lg"
-                          />
+                          <div className="relative">
+                            <img
+                              src={image}
+                              alt="Selected or Generated"
+                              className="mt-4 h-48 w-48 object-cover rounded-lg"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={() => setImage(null)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                       {fetcher.data?.errors?.image && (
@@ -400,7 +510,9 @@ export default function CreateMeal() {
                       type="submit"
                       name="action"
                       value="saveMeal"
-                      disabled={isSaving}
+                      disabled={
+                        isSaving || isGeneratingImage || isGeneratingDescription
+                      }
                     >
                       {isSaving ? (
                         <Loader2 className="animate-spin h-4 w-4" />
@@ -427,15 +539,36 @@ export async function action({ request }) {
   const allergies = form.getAll("allergies");
   const seasons = form.getAll("seasons");
 
+  // Check all inputs for sanitization
+  const { sanitizedInputs, errors } = sanitizeInputs({
+    title,
+    description,
+    tags,
+    mealPrompt,
+  });
+
+  // If there are any sanitization errors, return them immediately
+  if (Object.keys(errors).length > 0) {
+    return json({ errors }, { status: 400 });
+  }
+
+  // Use sanitized inputs from here on
+  const {
+    title: sanitizedTitle,
+    description: sanitizedDescription,
+    tags: sanitizedTags,
+    mealPrompt: sanitizedMealPrompt,
+  } = sanitizedInputs;
+
   if (action === "generateMeal") {
-    if (!mealPrompt) {
+    if (!sanitizedMealPrompt) {
       return json(
         { errors: { mealPrompt: "Please enter a meal prompt" } },
         { status: 400 },
       );
     }
 
-    if (mealPrompt.length > generatorStringMaxLength) {
+    if (sanitizedMealPrompt.length > generatorStringMaxLength) {
       return json(
         {
           errors: {
@@ -457,7 +590,7 @@ export async function action({ request }) {
           },
           {
             role: "user",
-            content: createMealPrompt(mealPrompt),
+            content: createMealPrompt(sanitizedMealPrompt),
           },
         ],
       });
@@ -473,8 +606,8 @@ export async function action({ request }) {
   }
 
   if (action === "saveMeal") {
-    const tagArray = tags
-      ? tags
+    const tagArray = sanitizedTags
+      ? sanitizedTags
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean)
@@ -493,16 +626,24 @@ export async function action({ request }) {
       }),
     );
 
-    const image = form.get("image");
+    const image = form.get("generatedImage");
     let imageUrl = null;
-    if (image && image.size > 0) {
-      imageUrl = await uploadImage(image);
+
+    if (image) {
+      // Check if the image is already a File
+      if (image instanceof File && image.size > 0) {
+        imageUrl = await uploadImage(image); // Upload the file directly
+      } else if (typeof image === "string") {
+        // If it's a base64 string, convert it to a File
+        const base64File = base64ToFile(image, `title-${Date.now()}.png`);
+        imageUrl = await uploadImage(base64File); // Upload the converted file
+      }
     }
 
     try {
       const newMeal = new mongoose.models.Meal({
-        title: title,
-        description: description,
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         allergies: allergies,
         seasons: seasons,
         tags: tagIds,
@@ -519,6 +660,86 @@ export async function action({ request }) {
         });
       }
       return json({ errors: errors }, { status: 400 });
+    }
+  }
+
+  if (action === "generateImage") {
+    try {
+      if (!sanitizedTitle || sanitizedTitle.trim().length === 0) {
+        return json(
+          { errors: { title: "Title is required" } },
+          { status: 400 },
+        );
+      }
+
+      const dalleImage = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: createMealImagePrompt(sanitizedTitle),
+      });
+
+      const imageUrl = dalleImage.data[0].url;
+
+      // Log the image URL for debugging
+      console.log("Generated Image URL:", imageUrl);
+
+      // Fetch the image file from the generated URL
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
+      }
+
+      // Convert the image to Buffer (Base64)
+      const imageBuffer = await imageResponse.buffer();
+      const generatedImage = imageBuffer.toString("base64");
+
+      return json({
+        generatedImage: `data:image/png;base64,${generatedImage}`,
+      });
+    } catch (error) {
+      console.error(error);
+      return json(
+        { errors: { image: "Error generating meal image" } },
+        { status: 500 },
+      );
+    }
+  }
+
+  if (action === "generateDescription") {
+    if (!sanitizedTitle || sanitizedTitle.trim().length === 0) {
+      return json(
+        { errors: { title: "Please enter a title" } },
+        { status: 400 },
+      );
+    }
+
+    try {
+      const chatGptResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a helpful professional chef working on a new menu for your restaurant",
+          },
+          {
+            role: "user",
+            content: createMealDescriptionPrompt(sanitizedTitle),
+          },
+        ],
+      });
+
+      const generatedDescription =
+        chatGptResponse.choices[0].message.content.trim();
+
+      return json({
+        generatedDescription: generatedDescription,
+      });
+    } catch (error) {
+      console.error(error);
+      return json(
+        { error: "Error generating meal description." },
+        { status: 500 },
+      );
     }
   }
 

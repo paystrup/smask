@@ -26,4 +26,4 @@ This starts your app in development mode, rebuilding assets on file changes.
 [firebase]: https://firebase.google.com/docs
 [cloudinary]: https://cloudinary.com
 [prettier]: https://prettier.io
-[openai api - gpt 4o-mini, dall-e] https://platform.openai.com/docs/api-reference
+[openai api - gpt 4o-mini, dall-e]: https://platform.openai.com/docs/api-reference

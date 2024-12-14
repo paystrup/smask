@@ -5,6 +5,10 @@ import { cn } from "~/lib/utils";
 
 const TooltipProvider = TooltipPrimitive.Provider;
 
+TooltipProvider.defaultProps = {
+  delayDuration: 0,
+};
+
 const Tooltip = TooltipPrimitive.Root;
 
 const TooltipTrigger = TooltipPrimitive.Trigger;

@@ -7,7 +7,7 @@ import { Button } from "~/components/ui/button";
 import { DialogClose, DialogContent } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { AllergyType, Seasons } from "~/db/models";
+import { AllergyType, Seasons } from "~/db/constants";
 
 export default function EditMeal({ actionData, meal, onSubmit }) {
   const [selectedAllergies, setSelectedAllergies] = useState(meal.allergies);

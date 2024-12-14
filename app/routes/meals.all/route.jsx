@@ -13,12 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Seasons } from "~/db/models";
 import MealCard from "~/components/_feature/cards/MealCard";
 import { cn } from "~/lib/utils";
 import { authenticator } from "~/services/auth.server";
 import { Badge } from "~/components/ui/badge";
 import Ribbon from "~/components/_foundation/Ribbon";
+import { Seasons } from "~/db/constants";
 
 export const meta = () => {
   return [
@@ -134,12 +134,12 @@ export default function Meals() {
         </Badge>
       )}
       <div className="flex items-center justify-center text-center flex-col gap-12 bg-white mb-10 w-full">
-        <h1 className="text-5xl font-medium tracking-tighter max-w-[25ch] mt-12 lg:mt-0">
+        <h1 className="text-5xl font-medium tracking-tighter max-w-[25ch] mt-20 lg:mt-0">
           {title}
         </h1>
       </div>
 
-      <div className="pt-6 pb-8 sticky top-0 bg-white z-10 flex flex-col w-full">
+      <div className="pt-6 sticky top-0 bg-white z-10 flex flex-col w-full">
         <div className="flex flex-col lg:flex-row gap-4">
           <Form className="w-full lg:mb-8" method="get" action="/meals/all">
             <div className="relative w-full">
@@ -240,7 +240,7 @@ export default function Meals() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-12 pb-20 w-full">
+      <div className="flex flex-col gap-12 pb-20 pt-12 w-full">
         {meals.length > 0 ? (
           <ul className="grid grid-cols-12 gap-4 w-full">
             {meals.map((meal) => {

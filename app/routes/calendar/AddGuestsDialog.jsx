@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Diets } from "~/db/models";
+import { Diets } from "~/db/constants";
 import { cn } from "~/lib/utils";
 
 export default function AddGuestsDialog({

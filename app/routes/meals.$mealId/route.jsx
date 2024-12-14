@@ -257,6 +257,14 @@ export default function MealDetailPage() {
 }
 
 export async function action({ request, params }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: `/`,
+  });
+
+  if (!user.admin) {
+    redirect("/");
+  }
+
   const form = await request.formData();
   const { title, description, tags, actionType } = Object.fromEntries(form);
 
@@ -303,6 +311,7 @@ export async function action({ request, params }) {
       seasons: seasons,
       tags: tagIds,
       image: imageUrl || (existingMeal ? existingMeal.image : undefined),
+      location: user?.location,
     };
 
     if (actionType === "saveAsNew") {

@@ -24,7 +24,10 @@ import { easeInOut } from "motion";
 import { sanitizeInputs } from "~/utils/client/simpleSanitization";
 import fetch from "node-fetch";
 import { base64ToFile } from "~/utils/server/encodeImageUrl.server";
-import { generatorStringMaxLength } from "~/db/constants";
+import {
+  generatorStringMaxLength,
+  mealDescriptionMaxLength,
+} from "~/db/constants";
 
 export const meta = () => {
   return [
@@ -313,6 +316,7 @@ export default function CreateMeal() {
                             generatedDescription ||
                             ""
                           }
+                          maxLength={mealDescriptionMaxLength}
                           disabled={isGeneratingDescription}
                           className={`border ${
                             fetcher.data?.errors?.description

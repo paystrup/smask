@@ -34,7 +34,7 @@ export const createMealPrompt = (mealPrompt) => {
 };
 
 export const createMealDescriptionPrompt = (title) => {
-  return `Generate a description for a meal with the title "${title}. Return only a string with the max length of ${mealDescriptionMaxLength} and minimum length of ${mealDescriptionMinLength}`;
+  return `Generate a description for a meal with the title "${title}. Return only a text string with the max length of ${mealDescriptionMaxLength} and minimum length of ${mealDescriptionMinLength} characters, no quotation mark`;
 };
 
 export const createMealImagePrompt = (title) => {

@@ -2,7 +2,7 @@ import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { AlignJustify, CreditCard, Search } from "lucide-react";
 import mongoose from "mongoose";
 import { Input } from "~/components/ui/input";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -17,6 +17,8 @@ import { Seasons } from "~/db/models";
 import MealCard from "~/components/_feature/cards/MealCard";
 import { cn } from "~/lib/utils";
 import { authenticator } from "~/services/auth.server";
+import { Badge } from "~/components/ui/badge";
+import Ribbon from "~/components/_foundation/Ribbon";
 
 export const meta = () => {
   return [
@@ -35,21 +37,32 @@ export const meta = () => {
 // Reference: https://www.mongodb.com/docs/manual/reference/operator/query/text/
 // TODO: Add limit to query
 export async function loader({ request }) {
-  await authenticator.isAuthenticated(request, {
+  const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
   });
+
+  // Redirect if user is not an admin
+  if (!user?.admin) {
+    return redirect("/");
+  }
 
   try {
     const url = new URL(request.url);
     const query = url.searchParams.get("q");
     const sort = url.searchParams.get("sort") || "";
     const season = url.searchParams.get("season") || "";
+    const userData = await mongoose.models.User.findById(user._id).populate(
+      "location",
+    );
 
     let mealsQuery;
     if (query) {
-      mealsQuery = mongoose.models.Meal.find({ $text: { $search: query } });
+      mealsQuery = mongoose.models.Meal.find({
+        $text: { $search: query },
+        location: user.location,
+      });
     } else {
-      mealsQuery = mongoose.models.Meal.find();
+      mealsQuery = mongoose.models.Meal.find({ location: user.location });
     }
 
     if (season) {
@@ -74,7 +87,7 @@ export async function loader({ request }) {
     }
 
     const meals = await mealsQuery.populate("tags");
-    return json({ meals, query, sort, season });
+    return json({ meals, query, sort, season, userData });
   } catch (error) {
     console.error(error);
     return json(
@@ -85,7 +98,7 @@ export async function loader({ request }) {
 }
 
 export default function Meals() {
-  const { meals, query, sort, season } = useLoaderData();
+  const { meals, query, sort, season, userData } = useLoaderData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState("grid");
   const title = "Search for delicious meals in your Smask library";
@@ -114,46 +127,47 @@ export default function Meals() {
   };
 
   return (
-    <section className="mt-16 px-8">
-      <div className="flex items-center justify-center text-center flex-col gap-12 bg-white mb-10">
-        <h1 className="text-5xl font-medium tracking-tighter max-w-[25ch]">
+    <Ribbon>
+      {userData?.location?.name && (
+        <Badge className="absolute right-0 top-0 m-4 bg-primary-blue text-white">
+          {userData.location.name}
+        </Badge>
+      )}
+      <div className="flex items-center justify-center text-center flex-col gap-12 bg-white mb-10 w-full">
+        <h1 className="text-5xl font-medium tracking-tighter max-w-[25ch] mt-12 lg:mt-0">
           {title}
         </h1>
       </div>
 
-      <div className="pt-6 pb-8 sticky top-0 bg-white z-10 flex flex-col">
-        <Form className="w-full mb-8" method="get" action="/meals/all">
-          <div className="relative w-full">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              name="q"
-              type="search"
-              id="search"
-              placeholder={
-                query
-                  ? query
-                  : "Search for meals, descriptions, ingredients, etc."
-              }
-              className="pl-8"
-            />
-          </div>
-          <input type="hidden" name="sort" value={sort} />
-          <button type="submit" hidden>
-            Search
-          </button>
-        </Form>
+      <div className="pt-6 pb-8 sticky top-0 bg-white z-10 flex flex-col w-full">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <Form className="w-full lg:mb-8" method="get" action="/meals/all">
+            <div className="relative w-full">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                name="q"
+                type="search"
+                id="search"
+                placeholder={
+                  query
+                    ? query
+                    : "Search for meals, descriptions, ingredients, etc."
+                }
+                className="pl-8"
+              />
+            </div>
+            <input type="hidden" name="sort" value={sort} />
+            <button type="submit" hidden>
+              Search
+            </button>
+          </Form>
 
-        <div className="flex flex-col lg:flex-row justify-between gap-4 lg:items-center">
-          <h2 className="text-2xl font-semibold tracking-tight w-full">
-            {queryFallback}
-          </h2>
-
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2 justify-end mb-8 lg:mb-0">
             <Select
               value={searchParams.get("season") || ""}
               onValueChange={(value) => handleParamChange("season", value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full lg:w-[180px]">
                 <SelectValue placeholder="Select season" />
               </SelectTrigger>
               <SelectContent>
@@ -172,7 +186,7 @@ export default function Meals() {
               value={searchParams.get("sort") || ""}
               onValueChange={(value) => handleParamChange("sort", value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full lg:w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -189,40 +203,46 @@ export default function Meals() {
           </div>
         </div>
 
-        <div className="hidden lg:flex mt-6 w-full justify-end items-end">
-          {/* <Form method="get" action="/meals/all">
+        <div className="flex flex-row justify-between gap-4 lg:items-center">
+          <h2 className="text-2xl font-semibold tracking-tight w-full">
+            {queryFallback}
+          </h2>
+
+          <div className="flex w-full justify-end items-end">
+            {/* <Form method="get" action="/meals/all">
             <Button type="submit" hidden>
               Clear
             </Button>
           </Form> */}
 
-          <div className="flex gap-4">
-            <p>View</p>
+            <div className="flex gap-4">
+              <p className="hidden lg:block">View</p>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => setView("grid")}
-                className={`hover:opacity-50 transition-opacity ease-in-out duration-300 ${view !== "grid" ? "opacity-30" : ""}`}
-                aria-label="Change to grid view"
-              >
-                <CreditCard className="h-6 w-6" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setView("grid")}
+                  className={`hover:opacity-50 transition-opacity ease-in-out duration-300 ${view !== "grid" ? "opacity-30" : ""}`}
+                  aria-label="Change to grid view"
+                >
+                  <CreditCard className="h-6 w-6" />
+                </button>
 
-              <button
-                onClick={() => setView("list")}
-                className={`hover:opacity-50 transition-opacity ease-in-out duration-300 ${view !== "list" ? "opacity-30" : ""}`}
-                aria-label="Change to list view"
-              >
-                <AlignJustify className="h-6 w-6" />
-              </button>
+                <button
+                  onClick={() => setView("list")}
+                  className={`hover:opacity-50 transition-opacity ease-in-out duration-300 ${view !== "list" ? "opacity-30" : ""}`}
+                  aria-label="Change to list view"
+                >
+                  <AlignJustify className="h-6 w-6" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-12 pb-20">
+      <div className="flex flex-col gap-12 pb-20 w-full">
         {meals.length > 0 ? (
-          <ul className="grid grid-cols-12 gap-4">
+          <ul className="grid grid-cols-12 gap-4 w-full">
             {meals.map((meal) => {
               return (
                 <li
@@ -252,6 +272,6 @@ export default function Meals() {
           </h3>
         )}
       </div>
-    </section>
+    </Ribbon>
   );
 }

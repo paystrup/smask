@@ -23,6 +23,19 @@ export async function action({ request, params }) {
   try {
     const mealId = params.mealId;
 
+    // Check if admin is allowed to delete, is it their location?
+    const meal = await mongoose.models.Meal.findById(mealId);
+
+    if (!meal) {
+      throw new Error("Meal not found");
+    }
+
+    if (!meal.location.equals(user.location)) {
+      throw new Error(
+        "You are not authorized to delete meals from this location",
+      );
+    }
+
     // Delete the meal from the database
     const deletedMeal = await mongoose.models.Meal.findByIdAndDelete(mealId);
 

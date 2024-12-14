@@ -36,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Diets } from "~/db/models";
+import { Diets } from "~/db/constants";
 import { authenticator } from "~/services/auth.server";
 
 export const meta = () => {

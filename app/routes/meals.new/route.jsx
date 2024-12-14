@@ -1,7 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import mongoose from "mongoose";
-import { AllergyType, Seasons } from "~/db/models";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Badge } from "~/components/ui/badge";
@@ -25,8 +24,10 @@ import { sanitizeInputs } from "~/utils/client/simpleSanitization";
 import fetch from "node-fetch";
 import { base64ToFile } from "~/utils/server/encodeImageUrl.server";
 import {
+  AllergyType,
   generatorStringMaxLength,
   mealDescriptionMaxLength,
+  Seasons,
 } from "~/db/constants";
 
 export const meta = () => {
@@ -132,7 +133,7 @@ export default function CreateMeal() {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    if (file.size < 100000) {
+    if (file.size < 1000000) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setImage(e.target.result); // Set the image state

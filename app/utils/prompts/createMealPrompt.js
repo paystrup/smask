@@ -2,12 +2,13 @@
 // Output should be a JSON object with the following fields
 
 import {
+  AllergyType,
   mealDescriptionMaxLength,
   mealDescriptionMinLength,
   mealTitleMaxLength,
   mealTitleMinLength,
+  Seasons,
 } from "~/db/constants";
-import { AllergyType, Seasons } from "~/db/models";
 
 export const createMealPrompt = (mealPrompt) => {
   return `
@@ -34,7 +35,7 @@ export const createMealPrompt = (mealPrompt) => {
 };
 
 export const createMealDescriptionPrompt = (title) => {
-  return `Generate a description for a meal with the title "${title}. Return only a text string with the max length of ${mealDescriptionMaxLength} and minimum length of ${mealDescriptionMinLength} characters, no quotation mark`;
+  return `Describe a meal with the title "${title}. It must be a text string with the maximum length of ${mealDescriptionMaxLength} characters and minimum length of ${mealDescriptionMinLength} characters, no quotation marks. You must reply with only one short sentence.`;
 };
 
 export const createMealImagePrompt = (title) => {

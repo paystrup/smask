@@ -102,6 +102,36 @@ export default function MealCard({
     return (
       <Link to={link} className="rounded-xl text-start group">
         <div className="rounded-2xl shadow-sm w-full h-fit relative text-white">
+          {/*             
+            We only show seasons, to not clutter the UI
+            TODO in the future - add props to toggle tags and allergies */}
+          {!startTime && !endTime && !hideTags && seasons.length > 0 && (
+            <ul className="flex flex-wrap gap-2 absolute top-0 left-0 m-4 z-20">
+              {seasons.slice(0, 1).map((season, i) => (
+                <li key={i}>
+                  <Badge variant="primary">{season}</Badge>
+                </li>
+              ))}
+
+              {seasons.length > 1 && (
+                <li>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge variant="secondary">+{seasons.length - 1}</Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="opacity-100">
+                      <ul>
+                        {seasons.slice(1).map((remainingSeason, i) => (
+                          <li key={i}>{remainingSeason}</li>
+                        ))}
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+              )}
+            </ul>
+          )}
+
           <div
             className={`relative overflow-hidden rounded-2xl  ${imageHeight}`}
           >
@@ -128,36 +158,6 @@ export default function MealCard({
               {format(new Date(startTime), "HH:mm")} -{" "}
               {format(new Date(endTime), "HH:mm")}
             </Badge>
-          )}
-
-          {/*             
-            We only show seasons, to not clutter the UI
-            TODO in the future - add props to toggle tags and allergies */}
-          {!startTime && !endTime && !hideTags && seasons.length > 0 && (
-            <ul className="flex flex-wrap gap-2 absolute top-0 left-0 m-4">
-              {seasons.slice(0, 1).map((season, i) => (
-                <li key={i}>
-                  <Badge variant="primary">{season}</Badge>
-                </li>
-              ))}
-
-              {seasons.length > 1 && (
-                <li>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Badge variant="secondary">+{seasons.length - 1}</Badge>
-                    </TooltipTrigger>
-                    <TooltipContent className="opacity-100">
-                      <ul>
-                        {seasons.slice(1).map((remainingSeason, i) => (
-                          <li key={i}>{remainingSeason}</li>
-                        ))}
-                      </ul>
-                    </TooltipContent>
-                  </Tooltip>
-                </li>
-              )}
-            </ul>
           )}
 
           <div className="p-6 rounded-b-2xl flex flex-col gap-4 absolute bottom-0 left-0">

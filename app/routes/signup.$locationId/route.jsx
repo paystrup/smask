@@ -13,7 +13,6 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import mongoose from "mongoose";
 import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
-import { Diets } from "~/db/models";
 import {
   Select,
   SelectContent,
@@ -29,6 +28,7 @@ import { Card, CardFooter } from "~/components/ui/card";
 import SimpleHeader from "~/components/_feature/SimpleHeader/SimpleHeader";
 import LoadingButton from "~/components/_foundation/pending/LoadingButton";
 import backgroundImage from "~/assets/img/signup-background.jpg";
+import { Diets } from "~/db/constants";
 
 export const meta = () => {
   return [

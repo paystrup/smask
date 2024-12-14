@@ -206,8 +206,8 @@ export default function Index() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-4 flex-grow overflow-hidden">
-        <div className="col-span-12 lg:col-span-5 flex flex-col gap-4">
+      <div className="grid grid-cols-12 gap-8 lg:gap-4 flex-grow overflow-hidden">
+        <div className="col-span-12 lg:col-span-5 flex flex-col gap-8 lg:gap-4">
           <DailyAttendanceCard
             mealDays={mealDays}
             isUserAttending={isUserAttending}
@@ -232,7 +232,7 @@ export default function Index() {
           <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
         </div>
 
-        <div className="col-span-3 flex flex-col w-full h-full gap-4">
+        <div className="col-span-12 lg:col-span-3 flex flex-col w-full h-full gap-8 lg:gap-4">
           <WeeklyAttendance mealDays={mealDays} />
 
           <WeeklyBirthdays users={allUsersInWorkspace} />

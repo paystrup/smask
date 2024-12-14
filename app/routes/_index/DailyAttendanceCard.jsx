@@ -16,7 +16,6 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { Diets } from "~/db/models";
 import { Form } from "@remix-run/react";
 import {
   Dialog,
@@ -33,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { Diets } from "~/db/constants";
 
 export function DailyAttendanceCard({
   mealDays,

@@ -51,13 +51,13 @@ export default function DailyMealCard({ mealDays }) {
                 onMouseEnter={() => setHoveredMeal(meal)}
                 onMouseLeave={() => setHoveredMeal(null)}
               >
-                <div className="flex justify-between gap-4 items-center">
+                <div className="flex flex-col-reverse lg:flex-row justify-between gap-4 lg:gap-8 items-start">
                   <h3 className="text-lg font-medium tracking-tighter">
                     {meal?.meal?.title}
                   </h3>
 
                   <Badge
-                    className="text-sm text-white outline-white"
+                    className="text-sm text-white outline-white inline-block w-fit whitespace-nowrap"
                     variant="outline"
                   >
                     {format(new Date(meal?.startTime), "HH:mm")}

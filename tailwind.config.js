@@ -9,6 +9,7 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        cards: "22px",
       },
       fontFamily: {
         sans: ["Geist", ...defaultTheme.fontFamily.sans],
@@ -16,6 +17,11 @@ export default {
       colors: {
         primary: {
           blue: "#0e3cf6",
+          peach: "#FFC3A9",
+          lime: "#E3FFB7",
+          dark: "#2D2D2D",
+          green: "#9CFF97",
+          purple: "#BE89FF",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

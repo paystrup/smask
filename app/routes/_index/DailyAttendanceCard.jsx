@@ -41,7 +41,6 @@ export function DailyAttendanceCard({
   isSubmitting,
   onGuestSubmit,
   userGuestsToday,
-  isAdmin,
 }) {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -110,29 +109,27 @@ export function DailyAttendanceCard({
           </div>
 
           <div className="flex gap-2">
-            {!isAdmin && (
-              <Button
-                onClick={onSubmit}
-                className={cn(
-                  "tracking-tight font-medium",
-                  isUserAttending
-                    ? "bg-red-500"
-                    : "bg-green-500 hover:bg-green-600",
-                )}
-                variant={isUserAttending ? "destructive" : "default"}
-                disabled={isSubmitting}
-                aria-label={isUserAttending ? "Don't attend today" : "Attend"}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="animate-spin" />
-                ) : isUserAttending ? (
-                  <X strokeWidth={3} />
-                ) : (
-                  <Check strokeWidth={3} />
-                )}
-                {isUserAttending ? "Don't attend" : "Attend"}
-              </Button>
-            )}
+            <Button
+              onClick={onSubmit}
+              className={cn(
+                "tracking-tight font-medium",
+                isUserAttending
+                  ? "bg-red-500"
+                  : "bg-green-500 hover:bg-green-600",
+              )}
+              variant={isUserAttending ? "destructive" : "default"}
+              disabled={isSubmitting}
+              aria-label={isUserAttending ? "Don't attend today" : "Attend"}
+            >
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" />
+              ) : isUserAttending ? (
+                <X strokeWidth={3} />
+              ) : (
+                <Check strokeWidth={3} />
+              )}
+              {isUserAttending ? "Don't attend" : "Attend"}
+            </Button>
 
             <Dialog>
               <DialogTrigger asChild>

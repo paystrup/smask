@@ -47,7 +47,8 @@ export const meta = () => {
     },
     {
       name: "description",
-      content: "The calendar page that shows you a weekly or monthly calendar and allows you to organize the days you want to attend.",
+      content:
+        "The calendar page that shows you a weekly or monthly calendar and allows you to organize the days you want to attend.",
     },
   ];
 };
@@ -463,7 +464,6 @@ export const action = async ({ request }) => {
         let mealDay = await mongoose.models.Mealday.findOne({ date });
 
         if (!mealDay) {
-          console.log(`Creating mealDay for date: ${date}`);
           mealDay = await mongoose.models.Mealday.create({
             date,
             meals: [],
@@ -477,11 +477,8 @@ export const action = async ({ request }) => {
         );
 
         if (userIndex === -1) {
-          console.log(`Adding user ${user._id} to attendees for date: ${date}`);
           mealDay.attendees.push({ user: user._id });
           await mealDay.save();
-        } else {
-          console.log(`User ${user._id} is already attending date: ${date}`);
         }
       }
 
@@ -498,7 +495,6 @@ export const action = async ({ request }) => {
         let mealDay = await mongoose.models.Mealday.findOne({ date });
 
         if (!mealDay) {
-          console.log(`No mealDay found for date: ${date}, skipping.`);
           continue;
         }
 
@@ -507,15 +503,8 @@ export const action = async ({ request }) => {
         );
 
         if (userIndex !== -1) {
-          console.log(
-            `Removing user ${user._id} from attendees for date: ${date}`,
-          );
           mealDay.attendees.splice(userIndex, 1);
           await mealDay.save();
-        } else {
-          console.log(
-            `User ${user._id} is not attending on date: ${date}, skipping.`,
-          );
         }
       }
 

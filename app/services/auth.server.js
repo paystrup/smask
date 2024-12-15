@@ -38,7 +38,6 @@ authenticator.use(
       // if problem with user throw error AuthorizationError
       throw new AuthorizationError("User not found");
     }
-    // console.log(user);
     return user;
   }),
   "user-pass",
@@ -48,7 +47,6 @@ async function verifyUser({ email, password }) {
   const user = await mongoose.models.User.findOne({ email }).select(
     "+password",
   );
-  // console.log(user);
   if (!user) {
     throw new AuthorizationError("No user found with this email.");
   }

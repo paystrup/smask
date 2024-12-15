@@ -1,8 +1,8 @@
 {
   "crons": [
     {
-      "path": "/app/utils/server/cronjobs/sendWeeklyReminders.server.js",
-      "schedule": "20 6 * * *"
+      "path": "/api/reminders",
+      "schedule": "0 9 * * 5"
     }
   ]
 }

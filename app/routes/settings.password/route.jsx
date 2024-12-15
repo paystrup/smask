@@ -152,7 +152,7 @@ export const action = async ({ request }) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     dbUser.password = hashedPassword;
     await dbUser.save();
-    await sendConfirmPasswordReset(dbUser.emaildb, dbUser.firstName);
+    await sendConfirmPasswordReset(dbUser.email, dbUser.firstName);
 
     return redirect("/settings");
   } catch (error) {

@@ -39,7 +39,6 @@ export default function ManageImage() {
   const { userData } = useLoaderData();
   const actionData = useActionData();
   const [image, setImage] = useState(null);
-  console.log(userData);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];

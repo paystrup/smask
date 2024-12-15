@@ -46,16 +46,16 @@ export default function WeeklyBirthdays({ users }) {
     });
 
   return (
-    <Card className="w-full h-full border-0 bg-black text-white flex flex-col justify-between gap-8">
-      <CardTitle className="p-6 flex justify-between items-start">
+    <Card className="w-full h-full border-0 bg-primary-dark text-white flex flex-col justify-between gap-8">
+      <CardTitle className="p-7 pb-2 flex justify-between items-start">
         <div>
-          <h3 className="text-2xl font-semibold tracking-tighter">Birthdays</h3>
-          <p className="text-lg opacity-50 font-normal">
+          <h3 className="text-2xl font-semibold tracking-tight">Birthdays</h3>
+          <p className="text-base font-medium opacity-50">
             {format(startOfWeek(today, { weekStartsOn: 1 }), "MMM d")} -{" "}
             {format(endOfWeek(today, { weekStartsOn: 1 }), "MMM d")}
           </p>
         </div>
-        <p className="text-lg opacity-50 font-normal">
+        <p className="text-base font-medium opacity-50">
           Week {format(today, "I")}
         </p>
       </CardTitle>
@@ -100,7 +100,9 @@ export default function WeeklyBirthdays({ users }) {
             })}
           </ul>
         ) : (
-          <p className="opacity-80">No birthdays this week</p>
+          <p className="text-base font-medium opacity-50">
+            No birthdays this week
+          </p>
         )}
       </CardContent>
     </Card>

@@ -3,6 +3,19 @@ import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import Ribbon from "~/components/_foundation/Ribbon";
 import { AnimatePresence, motion } from "motion/react";
 import { easeInOut } from "motion";
+import { authenticator } from "~/services/auth.server";
+import { json, redirect } from "@remix-run/node";
+
+export async function loader({ request }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
+  if (!user.admin) {
+    return redirect("/");
+  }
+  return json({ user });
+}
 
 export const meta = () => {
   return [

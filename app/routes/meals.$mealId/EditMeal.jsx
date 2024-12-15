@@ -42,14 +42,14 @@ export default function EditMeal({ actionData, meal, onSubmit }) {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    if (file.size < 500000) {
+    if (file.size < 1000000) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setImage(e.target.result);
       };
       reader.readAsDataURL(file);
     } else {
-      alert("Image size must be less than 0.5MB.");
+      alert("Image size must be less than 1MB.");
       event.target.value = "";
     }
   };

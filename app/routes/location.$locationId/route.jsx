@@ -1,8 +1,17 @@
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import mongoose from "mongoose";
+import { authenticator } from "~/services/auth.server";
 
-export async function loader({ params }) {
+export async function loader({ request, params }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
+  if (!user.admin) {
+    return redirect("/");
+  }
+
   const location = await mongoose.models.Location.findById(params.locationId);
   if (!location) {
     throw new Response(`Couldn't find meal with id ${params.mealId}`, {
@@ -32,7 +41,7 @@ export default function LocationPage() {
   const location = useLoaderData();
   return (
     <div>
-      {location.name} {location._id} {location.code}
+      {location?.name} {location?._id} {location?.code}
     </div>
   );
 }

@@ -1,9 +1,18 @@
 import { json } from "@remix-run/node";
 import { addWeeks, endOfWeek, format, startOfWeek } from "date-fns";
 import mongoose from "mongoose";
-import { sendReminder } from "../nodeMailer.server";
+import { sendReminder } from "~/utils/server/nodeMailer.server";
 
-export async function sendWeeklyReminders() {
+export async function loader({ request }) {
+  // Check if request is authorized with Vercel cron secret
+  const authHeader = request.headers.get("authorization");
+  if (
+    !process.env.CRON_SECRET ||
+    authHeader !== `Bearer ${process.env.CRON_SECRET}`
+  ) {
+    return json({ error: "Failed to authorize cron job" }, { status: 401 });
+  }
+
   try {
     // Calculate next week's date range (Monday to Sunday)
     const today = new Date();

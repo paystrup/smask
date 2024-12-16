@@ -42,6 +42,11 @@ export const mealDaySchema = new Schema(
         },
       },
     ],
+    location: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Location",
+      required: true,
+    },
     // Seperate guests from users, so we can track who added them
     // Also user does not need to attend to add guests
     guests: [

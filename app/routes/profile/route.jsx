@@ -5,16 +5,6 @@ import { json } from "@remix-run/node";
 import Profile from "~/components/profile/Profile";
 import { Button } from "~/components/ui/button";
 
-export async function loader({ request }) {
-  const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: "/login",
-  });
-  const userData = await mongoose.models.User.findById(user._id).populate(
-    "location",
-  );
-  return json({ userData });
-}
-
 export const meta = () => {
   return [
     { title: "SMASK | Profile" },
@@ -30,8 +20,26 @@ export const meta = () => {
   ];
 };
 
+export async function loader({ request }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
+  const userData = await mongoose.models.User.findById(user._id).populate(
+    "location",
+  );
+
+  // Fetch user's meal days
+  const userMeals = await mongoose.models.Mealday.find({
+    attendees: { $elemMatch: { user: user._id } },
+  });
+
+  return json({ userData, userMeals });
+}
+
 export default function ProfilePage() {
-  const { userData } = useLoaderData();
+  const { userData, userMeals } = useLoaderData();
+  console.log(userMeals);
 
   return (
     <section className="p-2 pt-14 lg:p-8 lg:pt-20">
@@ -41,7 +49,7 @@ export default function ProfilePage() {
       >
         <Button>Settings</Button>
       </Link>
-      <Profile userData={userData} />
+      <Profile userData={userData} userMeals={userMeals} />
     </section>
   );
 }

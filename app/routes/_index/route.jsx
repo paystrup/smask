@@ -44,6 +44,9 @@ export async function loader({ request }) {
 
   const mealDays = await mongoose.models.Mealday.aggregate([
     {
+      $match: { location: userData?.location._id },
+    },
+    {
       $lookup: {
         from: "users",
         localField: "attendees.user",
@@ -184,6 +187,7 @@ export default function Index() {
     <section className="flex flex-col lg:min-h-[100svh] p-2 md:px-4 lg:px-8 pt-14 pb-6 overflow-auto">
       <AnimatePresence>
         <motion.div
+          key="user-greeting"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -221,6 +225,7 @@ export default function Index() {
 
         <div className="grid grid-cols-12 gap-8 lg:gap-6 flex-grow overflow-hidden">
           <motion.div
+            key="daily-attendance"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -262,6 +267,7 @@ export default function Index() {
           </motion.div>
 
           <motion.div
+            key="weekly"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -348,6 +354,7 @@ export const action = async ({ request }) => {
         meals: [],
         attendees: [],
         guests: [],
+        location: user?.location,
       });
     }
 

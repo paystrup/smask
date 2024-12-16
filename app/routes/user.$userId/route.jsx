@@ -9,6 +9,26 @@ import { json, redirect } from "@remix-run/node";
 import Profile from "~/components/profile/Profile";
 import ErrorMessage from "~/components/_foundation/errorhandling/ErrorMessage";
 
+export const meta = ({ data }) => {
+  const userName =
+    data?.userData?.firstName && data?.userData?.lastName
+      ? `${data.userData.firstName} ${data.userData.lastName}`
+      : "User";
+
+  return [
+    { title: `SMASK | ${userName} Profile` },
+    {
+      property: "og:title",
+      content: `SMASK | ${userName} Profile`,
+    },
+    {
+      name: "description",
+      content:
+        "The profile page of a user displaying their avatar, name, latest attendance, favorite dish and much more...",
+    },
+  ];
+};
+
 export async function loader({ request, params }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
@@ -18,6 +38,12 @@ export async function loader({ request, params }) {
   const currentUser = await mongoose.models.User.findById(user._id);
   const userData =
     await mongoose.models.User.findById(userId).populate("location");
+
+  // Fetch user's meal days
+  const userMeals = await mongoose.models.Mealday.find({
+    attendees: { $elemMatch: { user: user._id } },
+  });
+
   if (!userData) {
     throw new Error(`User with ID ${userId} not found.`);
   }
@@ -27,33 +53,15 @@ export async function loader({ request, params }) {
     return redirect("/profile");
   }
 
-  return json({ userData });
+  return json({ userData, userMeals });
 }
 
-export const meta = ({ data }) => {
-  const userName = data?.userData?.firstName && data?.userData?.lastName
-    ? `${data.userData.firstName} ${data.userData.lastName}`
-    : "User";
-  return [
-    { title: `SMASK | ${userName} Profile` },
-    {
-      property: "og:title",
-      content: `SMASK | ${userName} Profile`,
-    },
-    {
-      name: "description",
-      content: "The profile page of a user displaying their avatar, name, latest attendance, favorite dish and much more...",
-    },
-  ];
-};
-
-
 export default function DynamicProfilePage() {
-  const { userData } = useLoaderData();
+  const { userData, userMeals } = useLoaderData();
 
   return (
     <section className="py-8">
-      <Profile userData={userData} />
+      <Profile userData={userData} userMeals={userMeals} />
     </section>
   );
 }

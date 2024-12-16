@@ -11,6 +11,8 @@ import { formatDateWithDateFns } from "~/utils/client/formatDate";
 import Announcements from "./Announcements";
 import { Badge } from "~/components/ui/badge";
 import UserGreeting from "./UserGreeting";
+import { AnimatePresence, motion } from "motion/react";
+import { easeInOut } from "motion";
 
 export const meta = () => {
   return [
@@ -37,7 +39,7 @@ export async function loader({ request }) {
   );
 
   const allUsersInWorkspace = await mongoose.models.User.find({
-    location: userData.location._id,
+    location: userData?.location._id,
   });
 
   const mealDays = await mongoose.models.Mealday.aggregate([
@@ -179,65 +181,101 @@ export default function Index() {
   const todayOrNextWorkday = isEndOfWeek ? "next workday" : "today";
 
   return (
-    <section className="flex flex-col lg:h-[100svh] p-2 md:px-4 lg:px-8 pt-14 pb-6">
-      <div className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12">
-        <div className="flex gap-2">
-          <UserGreeting userData={userData} isAdmin={isAdmin} />
+    <section className="flex flex-col lg:min-h-[100svh] p-2 md:px-4 lg:px-8 pt-14 pb-6 overflow-auto">
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.3,
+            ease: easeInOut,
+          }}
+          className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12"
+        >
+          <div className="flex gap-2">
+            <UserGreeting userData={userData} isAdmin={isAdmin} />
 
-          <div className="flex flex-col justify-between">
-            <h1 className="text-2xl font-medium tracking-tighter">
-              Hi, {userData.firstName}
-            </h1>
-            <p className="text-base font-medium tracking-tight opacity-70">
-              {isUserAttending
-                ? `You're attending ${todayOrNextWorkday}🍽️`
-                : `Not attending ${todayOrNextWorkday}😢`}
-            </p>
+            <div className="flex flex-col justify-between">
+              <h1 className="text-2xl font-medium tracking-tighter">
+                Hi, {userData.firstName}
+              </h1>
+              <p className="text-base font-medium tracking-tight opacity-70">
+                {isUserAttending
+                  ? `You're attending ${todayOrNextWorkday}🍽️`
+                  : `Not attending ${todayOrNextWorkday}😢`}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
-          <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
-            {todayFormatted}
-          </h2>
-          <Badge className="text-xs bg-primary-blue text-white">
-            {userData.location.name}
-          </Badge>
-        </div>
-      </div>
+          <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
+            <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
+              {todayFormatted}
+            </h2>
+            {userData?.location && (
+              <Badge className="text-xs bg-primary-blue text-white">
+                {userData?.location?.name}
+              </Badge>
+            )}
+          </div>
+        </motion.div>
 
-      <div className="grid grid-cols-12 gap-8 lg:gap-4 flex-grow overflow-hidden">
-        <div className="col-span-12 lg:col-span-5 flex flex-col gap-8 lg:gap-4">
-          <DailyAttendanceCard
-            mealDays={mealDays}
-            isUserAttending={isUserAttending}
-            isSubmitting={isSubmitting}
-            onSubmit={() =>
-              handleUserAttend(relevantMealday?.date || formattedDate)
-            }
-            isAdmin={isAdmin}
-            onGuestSubmit={(diet, action) =>
-              handleGuestAttend(
-                relevantMealday?.date || formattedDate,
-                diet,
-                action,
-              )
-            }
-            userGuestsToday={userGuestsToday}
-          />
-          <Announcements />
-        </div>
+        <div className="grid grid-cols-12 gap-8 lg:gap-6 flex-grow overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              ease: easeInOut,
+            }}
+            className="col-span-12 lg:col-span-4 flex flex-col gap-8 lg:gap-6"
+          >
+            <DailyAttendanceCard
+              mealDays={mealDays}
+              isUserAttending={isUserAttending}
+              isSubmitting={isSubmitting}
+              onSubmit={() =>
+                handleUserAttend(relevantMealday?.date || formattedDate)
+              }
+              isAdmin={isAdmin}
+              onGuestSubmit={(diet, action) =>
+                handleGuestAttend(
+                  relevantMealday?.date || formattedDate,
+                  diet,
+                  action,
+                )
+              }
+              userGuestsToday={userGuestsToday}
+            />
+            <Announcements />
+          </motion.div>
 
-        <div className="col-span-12 lg:col-span-4">
-          <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
-        </div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              ease: easeInOut,
+            }}
+            className="col-span-12 lg:col-span-4"
+          >
+            <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
+          </motion.div>
 
-        <div className="col-span-12 lg:col-span-3 flex flex-col w-full h-full gap-8 lg:gap-4">
-          <WeeklyAttendance mealDays={mealDays} />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              ease: easeInOut,
+            }}
+            className="col-span-12 lg:col-span-4 flex flex-col w-full h-full gap-8 lg:gap-6"
+          >
+            <WeeklyAttendance mealDays={mealDays} />
 
-          <WeeklyBirthdays users={allUsersInWorkspace} />
+            <WeeklyBirthdays users={allUsersInWorkspace} />
+          </motion.div>
         </div>
-      </div>
+      </AnimatePresence>
     </section>
   );
 }

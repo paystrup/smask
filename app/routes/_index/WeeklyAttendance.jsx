@@ -7,8 +7,8 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { ArrowDown, ArrowUp, TrendingUpIcon } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { ArrowDown, TrendingUpIcon } from "lucide-react";
+import { Bar, BarChart, XAxis } from "recharts";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import {
   ChartContainer,
@@ -95,14 +95,14 @@ export default function AttendanceChart({ mealDays }) {
   const trendColor = isPositive ? "text-green-500" : "text-red-500";
 
   return (
-    <Card className="w-full h-full border-0 bg-neutral-200/50 text-black">
+    <Card className="w-full h-full border-0 bg-primary-peach text-primary-dark">
       <CardContent className="pt-6 flex flex-col justify-between h-full gap-2">
         <div className="flex items-start justify-between">
-          <CardTitle className="mb-16 space-y-1">
-            <h3 className="text-2xl font-semibold tracking-tighter">
-              {view === "week" ? "Weekly" : "Monthly"} attendance
+          <CardTitle className="mb-8 2xl:mb-16">
+            <h3 className="text-2xl font-semibold tracking-tight">
+              {view === "week" ? "Week" : "Month"}
             </h3>
-            <p className="text-lg opacity-80 font-normal">
+            <p className="text-base font-medium opacity-50">
               {format(days[0].date, "MMM d")} -{" "}
               {format(days[days.length - 1].date, "MMM d")}
             </p>
@@ -112,12 +112,16 @@ export default function AttendanceChart({ mealDays }) {
               <Button
                 variant={view === "week" ? "default" : "outline"}
                 onClick={() => setView("week")}
+                size="sm"
+                className="px-4 border-none"
               >
                 Week
               </Button>
               <Button
                 variant={view === "month" ? "default" : "outline"}
                 onClick={() => setView("month")}
+                size="sm"
+                className="px-4 border-none"
               >
                 Month
               </Button>
@@ -130,8 +134,8 @@ export default function AttendanceChart({ mealDays }) {
               <div className="flex gap-1">
                 <div
                   className={cn(
-                    "flex items-center justify-center rounded-full h-6 w-6",
-                    isPositive ? "bg-green-400" : "bg-red-400",
+                    "flex items-center justify-center rounded-full h-8 w-8",
+                    isPositive ? "bg-primary-green" : "bg-red-400",
                   )}
                 >
                   {trendIcon}
@@ -152,6 +156,7 @@ export default function AttendanceChart({ mealDays }) {
               color: "hsl(var(--chart-2))",
             },
           }}
+          className="text-base text-primary-dark"
         >
           <BarChart
             accessibilityLayer
@@ -159,11 +164,6 @@ export default function AttendanceChart({ mealDays }) {
             barGap={2}
             barCategoryGap={0}
           >
-            <CartesianGrid
-              vertical={false}
-              color="#22222"
-              strokeDasharray="3 3"
-            />
             <XAxis
               tickLine={false}
               tickMargin={10}
@@ -173,10 +173,12 @@ export default function AttendanceChart({ mealDays }) {
             <ChartTooltip content={<ChartTooltipContent />} />
             <Bar
               dataKey="attendees"
-              radius={10}
-              width={10}
-              fill="#0e3cf6"
-              barSize={view === "week" ? 40 : 20}
+              radius={40}
+              width={20}
+              fill="#FFF"
+              barSize={view === "week" ? 50 : 20}
+              margin={{ top: 0, left: 0, right: 0, bottom: 0 }}
+              padding={{ top: 0, left: 0, right: 0, bottom: 0 }}
             />
           </BarChart>
         </ChartContainer>

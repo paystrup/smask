@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { Input } from "~/components/ui/input";
 import ContentWrapper from "~/components/_foundation/ContentWrapper";
 import Ribbon from "~/components/_foundation/Ribbon";
+import { authenticator } from "~/services/auth.server";
 
 export const meta = () => {
   return [
@@ -14,10 +15,24 @@ export const meta = () => {
     },
     {
       name: "description",
-      content: "Add a new location to the SMASK platform, complete with a unique name and code.",
+      content:
+        "Add a new location to the SMASK platform, complete with a unique name and code.",
     },
   ];
 };
+
+export async function loader({ request }) {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
+
+  if (!user.admin) {
+    return redirect("/");
+  }
+
+  const userData = await mongoose.models.User.findById(user._id);
+  return json({ user, userData });
+}
 
 export default function AddLocation() {
   const actionData = useActionData();

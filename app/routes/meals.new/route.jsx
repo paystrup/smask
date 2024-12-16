@@ -140,7 +140,7 @@ export default function CreateMeal() {
       };
       reader.readAsDataURL(file);
     } else {
-      alert("Image size must be less than 0.5MB.");
+      alert("Image size must be less than 1MB.");
       event.target.value = "";
     }
   };

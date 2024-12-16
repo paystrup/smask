@@ -1,18 +1,18 @@
 import {
   Bell,
-  BellRing,
   Calendar,
   ChevronsUpDown,
   LayoutDashboard,
   LogIn,
   LogOut,
-  PlusCircle,
+  Megaphone,
+  PlusSquare,
   Settings,
   Sparkle,
   Sparkles,
   User,
   Users,
-  Utensils,
+  UtensilsCrossed,
 } from "lucide-react";
 import {
   Sidebar,
@@ -77,17 +77,17 @@ const adminItems = [
   {
     title: "Announcements",
     url: "/announcements",
-    icon: BellRing,
+    icon: Megaphone,
   },
   {
     title: "All Meals",
     url: "/meals/all",
-    icon: Utensils,
+    icon: UtensilsCrossed,
   },
   {
     title: "Add Meal",
     url: "/meals/new",
-    icon: PlusCircle,
+    icon: PlusSquare,
   },
 ];
 

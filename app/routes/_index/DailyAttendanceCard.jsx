@@ -88,19 +88,19 @@ export function DailyAttendanceCard({
   return (
     <Card
       className={cn(
-        "p-6 border-none bg-black text-white relative h-full w-full flex flex-col justify-between transition-all duration-300 ease-in-out",
-        isUserAttending && "bg-green-400 text-white",
+        "p-7 border-none bg-primary-dark text-white relative h-full w-full flex flex-col justify-between transition-all duration-300 ease-in-out",
+        isUserAttending && "bg-primary-green text-primary-dark",
       )}
     >
       <CardTitle className="flex flex-col gap-2 justify-between z-[2]">
         <div className="flex justify-between">
           <div className="flex flex-col">
-            <h3 className="text-2xl font-semibold tracking-tighter">
-              Daily attendance
+            <h3 className="text-2xl font-semibold tracking-tight">
+              {isWeekend ? "Next workday" : "Today"}
             </h3>
             <p
               className={cn(
-                "text-lg opacity-50 font-normal",
+                "text-base font-medium opacity-50",
                 isUserAttending && "opacity-80",
               )}
             >
@@ -118,6 +118,7 @@ export function DailyAttendanceCard({
                   : "bg-green-500 hover:bg-green-600",
               )}
               variant={isUserAttending ? "destructive" : "default"}
+              size="sm"
               disabled={isSubmitting}
               aria-label={isUserAttending ? "Don't attend today" : "Attend"}
             >
@@ -133,7 +134,7 @@ export function DailyAttendanceCard({
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="w-full" variant="secondary">
+                <Button className="w-full" variant="secondary" size="sm">
                   <UserRound className="w-6 h-6" />
                   {userGuestsToday?.length || 0}
                 </Button>
@@ -236,8 +237,15 @@ export function DailyAttendanceCard({
         </div>
       </CardTitle>
 
-      <div className="flex w-full items-center justify-center gap-2 py-20 lg:py-12">
-        <h3 className="text-9xl tracking-tighter font-medium">{attendance}</h3>
+      <div className="flex w-full items-center justify-center gap-2 py-12 md:py-0">
+        <h3
+          className={cn(
+            "text-[7rem] tracking-tighter font-medium",
+            isUserAttending ? "outlineText" : "outlineTextDark",
+          )}
+        >
+          {attendance}
+        </h3>
       </div>
 
       <CardContent className="flex flex-wrap justify-between gap-2 mt-8 p-0 z-[4]">

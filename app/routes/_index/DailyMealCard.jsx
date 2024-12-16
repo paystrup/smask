@@ -26,18 +26,18 @@ export default function DailyMealCard({ mealDays }) {
   const dateString = format(displayDate, "EEE, MMM d");
 
   return (
-    <Card className="p-6 h-full flex flex-col gap-12 justify-between border-0 bg-primary-blue text-white relative">
+    <Card className="p-7 h-full flex flex-col gap-12 justify-between border-0 bg-primary-lime text-primary-dark relative">
       <CardTitle className="flex flex-col">
         <div className="flex justify-between items-center">
-          <h3 className="text-2xl font-semibold tracking-tighter">
+          <h3 className="text-2xl font-semibold tracking-tight">
             Menu of the day
           </h3>
 
           {isWeekend && (
-            <p className="text-lg opacity-80 font-normal">(Next workday)</p>
+            <p className="text-base font-medium opacity-50">Next workday</p>
           )}
         </div>
-        <p className="text-lg opacity-50 font-normal">{dateString}</p>
+        <p className="text-base font-medium opacity-50">{dateString}</p>
       </CardTitle>
 
       <CardContent className="p-0 space-y-12">
@@ -47,27 +47,44 @@ export default function DailyMealCard({ mealDays }) {
               <Link
                 to={`/meals/${meal?.meal?._id}`}
                 key={meal?.meal?._id}
-                className="flex flex-col gap-2 hover:opacity-70 transition-opacity duration-200 ease-in-out text-white"
+                className="flex flex-col lg:flex-row gap-4 hover:opacity-70 transition-opacity duration-200 ease-in-out text-primary-dark relative"
                 onMouseEnter={() => setHoveredMeal(meal)}
                 onMouseLeave={() => setHoveredMeal(null)}
               >
-                <div className="flex flex-col-reverse lg:flex-row justify-between gap-4 lg:gap-8 items-start">
-                  <h3 className="text-lg font-medium tracking-tighter">
-                    {meal?.meal?.title}
-                  </h3>
-
-                  <Badge
-                    className="text-sm text-white outline-white inline-block w-fit whitespace-nowrap"
-                    variant="outline"
-                  >
-                    {format(new Date(meal?.startTime), "HH:mm")}
-                    {" - "}
-                    {format(new Date(meal?.endTime), "HH:mm")}
-                  </Badge>
+                <div className="relative overflow-hidden rounded-3xl h-24 w-24 min-w-24 min-h-24">
+                  {meal?.meal?.image ? (
+                    <img
+                      src={meal?.meal?.image}
+                      alt={meal?.meal?.title}
+                      className="object-cover rounded-3xl h-full w-full group-hover:scale-[102%] transition-all duration-200 ease-in-out"
+                    />
+                  ) : (
+                    <div className="object-cover rounded-3xl h-full w-full group-hover:scale-[102%] transition-all duration-200 ease-in-out">
+                      <p>🍽️</p>
+                    </div>
+                  )}
                 </div>
-                <p className="opacity-70 tracking-tight text-md line-clamp-2">
-                  {meal?.meal?.description}
-                </p>
+
+                <div className="flex flex-col justify-between gap-4 items-start">
+                  <div className="flex flex-wrap-reverse md:flex-nowrap justify-between gap-4 lg:gap-8 w-full">
+                    <h3 className="text-xl font-semibold tracking-tighter">
+                      {meal?.meal?.title}
+                    </h3>
+
+                    <Badge
+                      className="text-sm h-fit outline-primary-dark text-primary-dark border-primary-dark inline-block w-fit whitespace-nowrap"
+                      variant="outline"
+                    >
+                      {format(new Date(meal?.startTime), "HH:mm")}
+                      {" - "}
+                      {format(new Date(meal?.endTime), "HH:mm")}
+                    </Badge>
+                  </div>
+
+                  <p className="opacity-70 tracking-tight text-md line-clamp-2">
+                    {meal?.meal?.description}
+                  </p>
+                </div>
               </Link>
             ))}
           </>

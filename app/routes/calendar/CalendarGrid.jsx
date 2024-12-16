@@ -178,7 +178,7 @@ export default function CalendarGrid({
 
                     {user.admin && (
                       <DropdownMenu>
-                        <DropdownMenuTrigger className="z-50 hover:opacity-80 duration-300 ease-in-out absolute m-4 bg-white p-2 top-0 right-0 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300">
+                        <DropdownMenuTrigger className="z-50 hover:opacity-80 duration-300 ease-in-out absolute m-4 bg-white p-2 top-0 right-0 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
                           <Ellipsis className="h-4 w-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>

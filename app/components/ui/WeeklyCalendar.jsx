@@ -18,36 +18,6 @@ import { authenticator } from "~/services/auth.server";
 import mongoose from "mongoose";
 import { useLoaderData } from "react-router";
 
-// Sample events data
-const eventsData = {
-  "2024-10-30": [
-    {
-      id: 1,
-      title: "Breakfast",
-      startTime: "09:00",
-      endTime: "10:00",
-      meal: "Pis og lort pasta med pis og lort i",
-    },
-    {
-      id: 2,
-      title: "Lunch",
-      startTime: "14:00",
-      endTime: "15:30",
-      meal: "Pis og lort pasta med pis og lort i",
-    },
-  ],
-  "2024-10-31": [
-    {
-      id: 3,
-      title: "Lunch",
-      startTime: "11:00",
-      endTime: "12:00",
-      meal: "Pis og lort pasta med pis og lort i",
-    },
-  ],
-  // Add more events for other days as needed
-};
-
 export async function loader({ request }) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
@@ -195,6 +165,7 @@ export default function WeeklyCalendar() {
 }
 
 export const action = async ({ request }) => {
+  const user 
   const form = await request.formData();
   const userId = form.get("userId");
   const date = new Date(form.get("date"));

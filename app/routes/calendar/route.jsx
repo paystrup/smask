@@ -63,6 +63,9 @@ export const loader = async ({ request }) => {
 
     const mealDays = await mongoose.models.Mealday.aggregate([
       {
+        $match: { location: userData?.location._id },
+      },
+      {
         $lookup: {
           from: "users",
           localField: "attendees.user",
@@ -469,6 +472,7 @@ export const action = async ({ request }) => {
             meals: [],
             attendees: [],
             guests: [],
+            location: user?.location,
           });
         }
 
@@ -529,6 +533,7 @@ export const action = async ({ request }) => {
         meals: [],
         attendees: [],
         guests: [],
+        location: user?.location,
       });
     }
 

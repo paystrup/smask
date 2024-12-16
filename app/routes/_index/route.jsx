@@ -1,4 +1,4 @@
-import { json } from "@remix-run/node";
+import { json } from "@vercel/remix";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
 import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
@@ -29,106 +29,112 @@ export const meta = () => {
   ];
 };
 
-export async function loader({ request }) {
-  const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: "/login",
-  });
+export async function loader({ request }, tries = 0) {
+  if (tries > 5) {
+    return json({ error: "Failed to load data" }, { status: 500 });
+  }
 
-  const userData = await mongoose.models.User.findById(user._id).populate(
-    "location",
-  );
+  try {
+    const user = await authenticator.isAuthenticated(request, {
+      failureRedirect: "/login",
+    });
 
-  const allUsersInWorkspace = await mongoose.models.User.find({
-    location: userData?.location._id,
-  });
+    const userData = await mongoose.models.User.findById(user._id).populate(
+      "location",
+    );
 
-  const mealDays = await mongoose.models.Mealday.aggregate([
-    {
-      $match: { location: userData?.location._id },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "attendees.user",
-        foreignField: "_id",
-        as: "attendeeDetails",
+    const allUsersInWorkspace = await mongoose.models.User.find({
+      location: userData?.location._id,
+    });
+
+    const mealDays = await mongoose.models.Mealday.aggregate([
+      {
+        $match: { location: userData?.location._id },
       },
-    },
-    {
-      $addFields: {
-        totalAttendees: {
-          $sum: [
-            { $size: { $ifNull: ["$attendees", []] } },
-            { $size: { $ifNull: ["$guests", []] } },
-          ],
+      {
+        $lookup: {
+          from: "users",
+          localField: "attendees.user",
+          foreignField: "_id",
+          as: "attendeeDetails",
         },
       },
-    },
-    {
-      $addFields: {
-        guests: {
-          $map: {
-            input: "$guests",
-            as: "guestId",
-            in: { $toObjectId: "$$guestId" },
+      {
+        $addFields: {
+          totalAttendees: {
+            $sum: [
+              { $size: { $ifNull: ["$attendees", []] } },
+              { $size: { $ifNull: ["$guests", []] } },
+            ],
           },
         },
       },
-    },
-    {
-      $lookup: {
-        from: "guests",
-        localField: "guests",
-        foreignField: "_id",
-        as: "guestDetails",
-      },
-    },
-    {
-      $lookup: {
-        from: "meals",
-        localField: "meals.meal",
-        foreignField: "_id",
-        as: "populatedMeals",
-      },
-    },
-    {
-      $addFields: {
-        meals: {
-          $map: {
-            input: "$meals",
-            as: "mealItem",
-            in: {
-              $mergeObjects: [
-                "$$mealItem",
-                {
-                  meal: {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: "$populatedMeals",
-                          cond: { $eq: ["$$this._id", "$$mealItem.meal"] },
-                        },
-                      },
-                      0,
-                    ],
-                  },
-                },
-              ],
+      {
+        $addFields: {
+          guests: {
+            $map: {
+              input: "$guests",
+              as: "guestId",
+              in: { $toObjectId: "$$guestId" },
             },
           },
         },
       },
-    },
-    {
-      $project: {
-        populatedMeals: 0,
+      {
+        $lookup: {
+          from: "guests",
+          localField: "guests",
+          foreignField: "_id",
+          as: "guestDetails",
+        },
       },
-    },
-  ]);
-
-  const isAdmin = userData.admin;
-
-  return json({ userData, mealDays, allUsersInWorkspace, isAdmin });
+      {
+        $lookup: {
+          from: "meals",
+          localField: "meals.meal",
+          foreignField: "_id",
+          as: "populatedMeals",
+        },
+      },
+      {
+        $addFields: {
+          meals: {
+            $map: {
+              input: "$meals",
+              as: "mealItem",
+              in: {
+                $mergeObjects: [
+                  "$$mealItem",
+                  {
+                    meal: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$populatedMeals",
+                            cond: { $eq: ["$$this._id", "$$mealItem.meal"] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          populatedMeals: 0,
+        },
+      },
+    ]);
+    const isAdmin = userData.admin;
+    return json({ userData, mealDays, allUsersInWorkspace, isAdmin });
+  } catch (error) {
+    return loader({ request }, tries + 1);
+  }
 }
 
 export default function Index() {

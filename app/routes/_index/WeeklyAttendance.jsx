@@ -128,23 +128,11 @@ export default function AttendanceChart({ mealDays }) {
             </div>
 
             <div className="flex gap-2 items-center justify-end">
+              {trendIcon}
               <p className="opacity-60 text-base tracking-tighter text-black">
-                Since last {view}
+                {isPositive ? "+" : ""}
+                {difference} Since last {view}
               </p>
-              <div className="flex gap-1">
-                <div
-                  className={cn(
-                    "flex items-center justify-center rounded-full h-8 w-8",
-                    isPositive ? "bg-primary-green" : "bg-red-400",
-                  )}
-                >
-                  {trendIcon}
-                </div>
-                <span className={`font-base ${trendColor}`}>
-                  {isPositive ? "+" : ""}
-                  {difference}{" "}
-                </span>
-              </div>
             </div>
           </div>
         </div>

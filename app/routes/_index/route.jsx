@@ -39,11 +39,11 @@ export async function loader({ request }, tries = 0) {
     return json({ error: "Failed to load data" }, { status: 500 });
   }
 
-  try {
-    const user = await authenticator.isAuthenticated(request, {
-      failureRedirect: "/login",
-    });
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
 
+  try {
     if (!user || !user._id) {
       console.error("User not authenticated or missing _id");
       return redirect("/login");
@@ -148,7 +148,6 @@ export async function loader({ request }, tries = 0) {
     return json({ userData, mealDays, allUsersInWorkspace });
   } catch (error) {
     console.error("Retrying loader", tries, error);
-    console.log();
     return loader({ request }, tries + 1);
   }
 }

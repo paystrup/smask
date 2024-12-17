@@ -176,13 +176,19 @@ export default function Index() {
   }
 
   const formattedDate = formatDateWithDateFns(displayDate.toISOString());
-  const relevantMealday = mealDays?.find(
-    (meal) => formatDateWithDateFns(meal.date) === formattedDate,
-  );
+  const relevantMealday =
+    mealDays && mealDays.length > 0
+      ? (mealDays.find(
+          (meal) => formatDateWithDateFns(meal.date) === formattedDate,
+        ) ?? null)
+      : null;
 
-  const userAttendance = relevantMealday?.attendees?.find(
-    (attendee) => attendee.user.toString() === userData._id,
-  );
+  const userAttendance =
+    relevantMealday?.attendees && relevantMealday.attendees.length > 0
+      ? (relevantMealday.attendees.find(
+          (attendee) => attendee.user?.toString() === userData?._id,
+        ) ?? null)
+      : null;
   const isUserAttending = !!userAttendance;
 
   const handleUserAttend = (day) => {

@@ -266,25 +266,24 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4 flex flex-col gap-8 lg:gap-6"
           >
-            {mealDays && mealDays.length === 0 && relevantMealday && (
-              <DailyAttendanceCard
-                mealDays={mealDays}
-                isUserAttending={isUserAttending}
-                isSubmitting={isSubmitting}
-                onSubmit={() =>
-                  handleUserAttend(relevantMealday?.date || formattedDate)
-                }
-                isAdmin={isAdmin}
-                onGuestSubmit={(diet, action) =>
-                  handleGuestAttend(
-                    relevantMealday?.date || formattedDate,
-                    diet,
-                    action,
-                  )
-                }
-                userGuestsToday={userGuestsToday}
-              />
-            )}
+            <DailyAttendanceCard
+              mealDays={mealDays}
+              isUserAttending={isUserAttending}
+              isSubmitting={isSubmitting}
+              onSubmit={() =>
+                handleUserAttend(relevantMealday?.date || formattedDate)
+              }
+              isAdmin={isAdmin}
+              onGuestSubmit={(diet, action) =>
+                handleGuestAttend(
+                  relevantMealday?.date || formattedDate,
+                  diet,
+                  action,
+                )
+              }
+              userGuestsToday={userGuestsToday}
+            />
+
             <Announcements />
           </motion.div>
 

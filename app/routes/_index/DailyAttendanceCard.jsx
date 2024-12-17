@@ -35,12 +35,12 @@ import {
 import { Diets } from "~/db/constants";
 
 export function DailyAttendanceCard({
-  mealDays,
-  onSubmit,
-  isUserAttending,
-  isSubmitting,
-  onGuestSubmit,
-  userGuestsToday,
+  mealDays = [],
+  onSubmit = () => {},
+  isUserAttending = false,
+  isSubmitting = false,
+  onGuestSubmit = () => {},
+  userGuestsToday = [],
 }) {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -53,22 +53,36 @@ export function DailyAttendanceCard({
   }
 
   const formattedDate = formatDateWithDateFns(displayDate.toISOString());
-  const relevantMealday = mealDays.find(
-    (meal) => formatDateWithDateFns(meal.date) === formattedDate,
-  );
-  const attendance = relevantMealday ? relevantMealday.totalAttendees : 0;
+  const relevantMealday =
+    mealDays && mealDays.length > 0
+      ? mealDays.find(
+          (meal) =>
+            meal &&
+            meal.date &&
+            formatDateWithDateFns(meal.date) === formattedDate,
+        )
+      : null;
+  const attendance =
+    relevantMealday && typeof relevantMealday.totalAttendees === "number"
+      ? relevantMealday.totalAttendees
+      : 0;
   const dietCounts = [
     ...(relevantMealday?.attendeeDetails || []),
     ...(relevantMealday?.guestDetails || []),
   ].reduce((counts, person) => {
-    counts[person.diet] = (counts[person.diet] || 0) + 1;
+    if (person && person.diet) {
+      counts[person.diet] = (counts[person.diet] || 0) + 1;
+    }
     return counts;
   }, {});
 
-  const userGuestDietCounts = userGuestsToday?.reduce((counts, guest) => {
-    counts[guest.diet] = (counts[guest.diet] || 0) + 1;
-    return counts;
-  }, {});
+  const userGuestDietCounts =
+    userGuestsToday?.reduce((counts, guest) => {
+      if (guest && guest.diet) {
+        counts[guest.diet] = (counts[guest.diet] || 0) + 1;
+      }
+      return counts;
+    }, {}) || {};
 
   const dateString = format(displayDate, "EEE, MMM d");
 
@@ -249,12 +263,13 @@ export function DailyAttendanceCard({
       </div>
 
       <CardContent className="flex flex-wrap justify-between gap-2 mt-8 p-0 z-[4]">
-        <Attendees mealDay={relevantMealday} />
+        {relevantMealday && <Attendees mealDay={relevantMealday} />}
 
         <div className="flex gap-1 flex-wrap">
           {Object.entries(dietCounts).map(
             ([diet, count]) =>
-              diet !== "none" && (
+              diet !== "none" &&
+              count !== undefined && (
                 <TooltipProvider key={diet}>
                   <Tooltip>
                     <TooltipTrigger>

@@ -225,31 +225,35 @@ export default function Index() {
           }}
           className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12"
         >
-          <div className="flex gap-2">
-            <UserGreeting userData={userData} isAdmin={isAdmin} />
+          {userData && (
+            <>
+              <div className="flex gap-2">
+                <UserGreeting userData={userData} isAdmin={isAdmin} />
 
-            <div className="flex flex-col justify-between">
-              <h1 className="text-2xl font-medium tracking-tighter">
-                Hi, {userData.firstName}
-              </h1>
-              <p className="text-base font-medium tracking-tight opacity-70">
-                {isUserAttending
-                  ? `You're attending ${todayOrNextWorkday}🍽️`
-                  : `Not attending ${todayOrNextWorkday}😢`}
-              </p>
-            </div>
-          </div>
+                <div className="flex flex-col justify-between">
+                  <h1 className="text-2xl font-medium tracking-tighter">
+                    Hi, {userData?.firstName}
+                  </h1>
+                  <p className="text-base font-medium tracking-tight opacity-70">
+                    {isUserAttending
+                      ? `You're attending ${todayOrNextWorkday}🍽️`
+                      : `Not attending ${todayOrNextWorkday}😢`}
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
-            <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
-              {todayFormatted}
-            </h2>
-            {userData?.location && (
-              <Badge className="text-xs bg-primary-blue text-white">
-                {userData?.location?.name}
-              </Badge>
-            )}
-          </div>
+              <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
+                <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
+                  {todayFormatted}
+                </h2>
+                {userData?.location && (
+                  <Badge className="text-xs bg-primary-blue text-white">
+                    {userData?.location?.name}
+                  </Badge>
+                )}
+              </div>
+            </>
+          )}
         </motion.div>
 
         <div className="grid grid-cols-12 gap-8 lg:gap-6 flex-grow overflow-hidden">
@@ -263,23 +267,25 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4 flex flex-col gap-8 lg:gap-6"
           >
-            <DailyAttendanceCard
-              mealDays={mealDays}
-              isUserAttending={isUserAttending}
-              isSubmitting={isSubmitting}
-              onSubmit={() =>
-                handleUserAttend(relevantMealday?.date || formattedDate)
-              }
-              isAdmin={isAdmin}
-              onGuestSubmit={(diet, action) =>
-                handleGuestAttend(
-                  relevantMealday?.date || formattedDate,
-                  diet,
-                  action,
-                )
-              }
-              userGuestsToday={userGuestsToday}
-            />
+            {mealDays && mealDays.length === 0 && relevantMealday && (
+              <DailyAttendanceCard
+                mealDays={mealDays}
+                isUserAttending={isUserAttending}
+                isSubmitting={isSubmitting}
+                onSubmit={() =>
+                  handleUserAttend(relevantMealday?.date || formattedDate)
+                }
+                isAdmin={isAdmin}
+                onGuestSubmit={(diet, action) =>
+                  handleGuestAttend(
+                    relevantMealday?.date || formattedDate,
+                    diet,
+                    action,
+                  )
+                }
+                userGuestsToday={userGuestsToday}
+              />
+            )}
             <Announcements />
           </motion.div>
 
@@ -292,7 +298,9 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4"
           >
-            <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
+            {mealDays && mealDays.length > 0 && relevantMealday && (
+              <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
+            )}
           </motion.div>
 
           <motion.div
@@ -305,9 +313,13 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4 flex flex-col w-full h-full gap-8 lg:gap-6"
           >
-            <WeeklyAttendance mealDays={mealDays} />
+            {mealDays && mealDays.length > 0 && (
+              <WeeklyAttendance mealDays={mealDays} />
+            )}
 
-            <WeeklyBirthdays users={allUsersInWorkspace} />
+            {allUsersInWorkspace && (
+              <WeeklyBirthdays users={allUsersInWorkspace} />
+            )}
           </motion.div>
         </div>
       </AnimatePresence>

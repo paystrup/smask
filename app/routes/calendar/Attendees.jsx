@@ -3,7 +3,6 @@
 // Attendees are sorted by first name
 // Attendees are limited to slicecount
 
-import { UserRound } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -73,7 +72,7 @@ export default function Attendees({ mealDay, maxAvatars }) {
               >
                 <div className="w-full h-full rounded-full object-cover bg-white text-black flex items-center justify-center relative">
                   <p className="text-xs absolute inset-0 flex items-center justify-center">
-                    <UserRound className="w-4 h-4 opacity-50" />
+                    ?
                   </p>
                 </div>
               </li>

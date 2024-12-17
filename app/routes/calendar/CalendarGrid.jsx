@@ -226,7 +226,7 @@ export default function CalendarGrid({
           )}
 
           {/* Dont show attend button if user is admin */}
-          {user && !user.admin && !isMonthView && (
+          {user && !user.admin && (
             <Button
               size="lg"
               onClick={() => handleUserAttend(formattedDate)}

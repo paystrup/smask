@@ -145,15 +145,15 @@ export async function loader({ request }, tries = 0) {
         },
       },
     ]);
-    const isAdmin = userData.admin;
-    return json({ userData, mealDays, allUsersInWorkspace, isAdmin });
+    return json({ userData, mealDays, allUsersInWorkspace });
   } catch (error) {
     return loader({ request }, tries + 1);
   }
 }
 
 export default function Index() {
-  const { mealDays, userData, allUsersInWorkspace, isAdmin } = useLoaderData();
+  const { mealDays, userData, allUsersInWorkspace } = useLoaderData();
+  const isAdmin = userData?.admin;
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.formAction === "/?index";

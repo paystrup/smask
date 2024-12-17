@@ -1,7 +1,12 @@
 import { json } from "@vercel/remix";
 import mongoose from "mongoose";
 import { authenticator } from "~/services/auth.server";
-import { useLoaderData, useNavigation, useSubmit } from "@remix-run/react";
+import {
+  redirect,
+  useLoaderData,
+  useNavigation,
+  useSubmit,
+} from "@remix-run/react";
 import { DailyAttendanceCard } from "./DailyAttendanceCard";
 import WeeklyAttendance from "./WeeklyAttendance";
 import DailyMealCard from "./DailyMealCard";
@@ -39,9 +44,19 @@ export async function loader({ request }, tries = 0) {
       failureRedirect: "/login",
     });
 
+    if (!user || !user._id) {
+      console.error("User not authenticated or missing _id");
+      return redirect("/login");
+    }
+
     const userData = await mongoose.models.User.findById(user._id).populate(
       "location",
     );
+
+    if (!userData) {
+      console.error("User data not found");
+      return redirect("/login");
+    }
 
     const allUsersInWorkspace = await mongoose.models.User.find({
       location: userData?.location._id,

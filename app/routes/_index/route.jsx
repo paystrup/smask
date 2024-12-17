@@ -49,7 +49,7 @@ export async function loader({ request }, tries = 0) {
       return redirect("/login");
     }
 
-    const userData = await mongoose.models.User.findById(user._id).populate(
+    const userData = await mongoose.models.User?.findById(user._id).populate(
       "location",
     );
 
@@ -58,13 +58,13 @@ export async function loader({ request }, tries = 0) {
       return redirect("/login");
     }
 
-    const allUsersInWorkspace = await mongoose.models.User.find({
+    const allUsersInWorkspace = await mongoose.models?.User?.find({
       location: userData?.location._id,
     });
 
-    const mealDays = await mongoose.models.Mealday.aggregate([
+    const mealDays = await mongoose.models?.Mealday?.aggregate([
       {
-        $match: { location: userData?.location._id },
+        $match: { location: userData?.location?._id },
       },
       {
         $lookup: {
@@ -147,6 +147,8 @@ export async function loader({ request }, tries = 0) {
     ]);
     return json({ userData, mealDays, allUsersInWorkspace });
   } catch (error) {
+    console.error("Retrying loader", tries, error);
+    console.log();
     return loader({ request }, tries + 1);
   }
 }
@@ -174,11 +176,11 @@ export default function Index() {
   }
 
   const formattedDate = formatDateWithDateFns(displayDate.toISOString());
-  const relevantMealday = mealDays.find(
+  const relevantMealday = mealDays?.find(
     (meal) => formatDateWithDateFns(meal.date) === formattedDate,
   );
 
-  const userAttendance = relevantMealday?.attendees.find(
+  const userAttendance = relevantMealday?.attendees?.find(
     (attendee) => attendee.user.toString() === userData._id,
   );
   const isUserAttending = !!userAttendance;
@@ -319,7 +321,7 @@ export const action = async ({ request }) => {
 
   // Helper functions
   const handleAttend = (mealDay, userId) => {
-    const userIndex = mealDay.attendees.findIndex(
+    const userIndex = mealDay.attendees?.findIndex(
       (attendee) => attendee.user.toString() === userId,
     );
 
@@ -339,7 +341,7 @@ export const action = async ({ request }) => {
   };
 
   const handleRemoveGuest = (mealDay, diet, userId) => {
-    const guestIndex = mealDay.guests.findIndex(
+    const guestIndex = mealDay.guests?.findIndex(
       (guest) => guest.addedBy.toString() === userId && guest.diet === diet,
     );
 
@@ -365,7 +367,7 @@ export const action = async ({ request }) => {
   };
 
   try {
-    let mealDay = await mongoose.models.Mealday.findOne({ date }).populate(
+    let mealDay = await mongoose.models.Mealday?.findOne({ date }).populate(
       "guests",
     );
 

@@ -39,17 +39,17 @@ export async function loader({ request }, tries = 0) {
     return json({ error: "Failed to load data" }, { status: 500 });
   }
 
-  try {
-    const user = await authenticator.isAuthenticated(request, {
-      failureRedirect: "/login",
-    });
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/login",
+  });
 
+  try {
     if (!user || !user._id) {
       console.error("User not authenticated or missing _id");
       return redirect("/login");
     }
 
-    const userData = await mongoose.models.User.findById(user._id).populate(
+    const userData = await mongoose.models.User?.findById(user._id).populate(
       "location",
     );
 
@@ -58,13 +58,13 @@ export async function loader({ request }, tries = 0) {
       return redirect("/login");
     }
 
-    const allUsersInWorkspace = await mongoose.models.User.find({
+    const allUsersInWorkspace = await mongoose.models?.User?.find({
       location: userData?.location._id,
     });
 
-    const mealDays = await mongoose.models.Mealday.aggregate([
+    const mealDays = await mongoose.models?.Mealday?.aggregate([
       {
-        $match: { location: userData?.location._id },
+        $match: { location: userData?.location?._id },
       },
       {
         $lookup: {
@@ -145,15 +145,16 @@ export async function loader({ request }, tries = 0) {
         },
       },
     ]);
-    const isAdmin = userData.admin;
-    return json({ userData, mealDays, allUsersInWorkspace, isAdmin });
+    return json({ userData, mealDays, allUsersInWorkspace });
   } catch (error) {
+    console.error("Retrying loader", tries, error);
     return loader({ request }, tries + 1);
   }
 }
 
 export default function Index() {
-  const { mealDays, userData, allUsersInWorkspace, isAdmin } = useLoaderData();
+  const { mealDays, userData, allUsersInWorkspace } = useLoaderData();
+  const isAdmin = userData?.admin;
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.formAction === "/?index";
@@ -174,13 +175,19 @@ export default function Index() {
   }
 
   const formattedDate = formatDateWithDateFns(displayDate.toISOString());
-  const relevantMealday = mealDays.find(
-    (meal) => formatDateWithDateFns(meal.date) === formattedDate,
-  );
+  const relevantMealday =
+    mealDays && mealDays.length > 0
+      ? (mealDays.find(
+          (meal) => formatDateWithDateFns(meal.date) === formattedDate,
+        ) ?? null)
+      : null;
 
-  const userAttendance = relevantMealday?.attendees.find(
-    (attendee) => attendee.user.toString() === userData._id,
-  );
+  const userAttendance =
+    relevantMealday?.attendees && relevantMealday.attendees.length > 0
+      ? (relevantMealday.attendees.find(
+          (attendee) => attendee.user?.toString() === userData?._id,
+        ) ?? null)
+      : null;
   const isUserAttending = !!userAttendance;
 
   const handleUserAttend = (day) => {
@@ -217,31 +224,35 @@ export default function Index() {
           }}
           className="flex flex-col lg:flex-row items-start justify-between w-full mb-6 lg:mb-12"
         >
-          <div className="flex gap-2">
-            <UserGreeting userData={userData} isAdmin={isAdmin} />
+          {userData && (
+            <>
+              <div className="flex gap-2">
+                <UserGreeting userData={userData} isAdmin={isAdmin} />
 
-            <div className="flex flex-col justify-between">
-              <h1 className="text-2xl font-medium tracking-tighter">
-                Hi, {userData.firstName}
-              </h1>
-              <p className="text-base font-medium tracking-tight opacity-70">
-                {isUserAttending
-                  ? `You're attending ${todayOrNextWorkday}🍽️`
-                  : `Not attending ${todayOrNextWorkday}😢`}
-              </p>
-            </div>
-          </div>
+                <div className="flex flex-col justify-between">
+                  <h1 className="text-2xl font-medium tracking-tighter">
+                    Hi, {userData?.firstName}
+                  </h1>
+                  <p className="text-base font-medium tracking-tight opacity-70">
+                    {isUserAttending
+                      ? `You're attending ${todayOrNextWorkday}🍽️`
+                      : `Not attending ${todayOrNextWorkday}😢`}
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
-            <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
-              {todayFormatted}
-            </h2>
-            {userData?.location && (
-              <Badge className="text-xs bg-primary-blue text-white">
-                {userData?.location?.name}
-              </Badge>
-            )}
-          </div>
+              <div className="flex mt-6 lg:mt-0 lg:flex-col justify-between w-full lg:w-fit lg:items-end gap-2">
+                <h2 className="text-md lg:text-2xl tracking-tighter font-medium">
+                  {todayFormatted}
+                </h2>
+                {userData?.location && (
+                  <Badge className="text-xs bg-primary-blue text-white">
+                    {userData?.location?.name}
+                  </Badge>
+                )}
+              </div>
+            </>
+          )}
         </motion.div>
 
         <div className="grid grid-cols-12 gap-8 lg:gap-6 flex-grow overflow-hidden">
@@ -255,23 +266,25 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4 flex flex-col gap-8 lg:gap-6"
           >
-            <DailyAttendanceCard
-              mealDays={mealDays}
-              isUserAttending={isUserAttending}
-              isSubmitting={isSubmitting}
-              onSubmit={() =>
-                handleUserAttend(relevantMealday?.date || formattedDate)
-              }
-              isAdmin={isAdmin}
-              onGuestSubmit={(diet, action) =>
-                handleGuestAttend(
-                  relevantMealday?.date || formattedDate,
-                  diet,
-                  action,
-                )
-              }
-              userGuestsToday={userGuestsToday}
-            />
+            {mealDays && mealDays.length === 0 && relevantMealday && (
+              <DailyAttendanceCard
+                mealDays={mealDays}
+                isUserAttending={isUserAttending}
+                isSubmitting={isSubmitting}
+                onSubmit={() =>
+                  handleUserAttend(relevantMealday?.date || formattedDate)
+                }
+                isAdmin={isAdmin}
+                onGuestSubmit={(diet, action) =>
+                  handleGuestAttend(
+                    relevantMealday?.date || formattedDate,
+                    diet,
+                    action,
+                  )
+                }
+                userGuestsToday={userGuestsToday}
+              />
+            )}
             <Announcements />
           </motion.div>
 
@@ -284,7 +297,9 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4"
           >
-            <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
+            {mealDays && mealDays.length > 0 && relevantMealday && (
+              <DailyMealCard mealDays={mealDays} isAdmin={isAdmin} />
+            )}
           </motion.div>
 
           <motion.div
@@ -297,9 +312,13 @@ export default function Index() {
             }}
             className="col-span-12 lg:col-span-4 flex flex-col w-full h-full gap-8 lg:gap-6"
           >
-            <WeeklyAttendance mealDays={mealDays} />
+            {mealDays && mealDays.length > 0 && (
+              <WeeklyAttendance mealDays={mealDays} />
+            )}
 
-            <WeeklyBirthdays users={allUsersInWorkspace} />
+            {allUsersInWorkspace && (
+              <WeeklyBirthdays users={allUsersInWorkspace} />
+            )}
           </motion.div>
         </div>
       </AnimatePresence>
@@ -319,7 +338,7 @@ export const action = async ({ request }) => {
 
   // Helper functions
   const handleAttend = (mealDay, userId) => {
-    const userIndex = mealDay.attendees.findIndex(
+    const userIndex = mealDay.attendees?.findIndex(
       (attendee) => attendee.user.toString() === userId,
     );
 
@@ -339,7 +358,7 @@ export const action = async ({ request }) => {
   };
 
   const handleRemoveGuest = (mealDay, diet, userId) => {
-    const guestIndex = mealDay.guests.findIndex(
+    const guestIndex = mealDay.guests?.findIndex(
       (guest) => guest.addedBy.toString() === userId && guest.diet === diet,
     );
 
@@ -365,7 +384,7 @@ export const action = async ({ request }) => {
   };
 
   try {
-    let mealDay = await mongoose.models.Mealday.findOne({ date }).populate(
+    let mealDay = await mongoose.models.Mealday?.findOne({ date }).populate(
       "guests",
     );
 
